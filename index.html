@@ -215,7 +215,6 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 10px 0;
   font-size: 10px;
   opacity: 0.7;
   min-width: 50px;
@@ -232,10 +231,6 @@ body {
   height: 240px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
-  display: flex;
-  align-items: flex-end;
-  padding: 10px 10px;
-  gap: 2px;
   margin-bottom: 10px;
   position: relative;
   overflow: hidden;
@@ -244,7 +239,7 @@ body {
 .current-time-line {
   position: absolute;
   top: 0;
-  bottom: 10px;
+  bottom: 0;
   width: 2px;
   background: transparent;
   border-left: 2px dashed rgba(200, 200, 200, 0.5);
@@ -252,22 +247,28 @@ body {
   z-index: 10;
 }
 
+.zero-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 5;
+}
+
 .bar {
-  flex: 1;
-  min-width: 0;
-  border-radius: 2px 2px 0 0;
+  position: absolute;
   transition: opacity 0.2s;
   cursor: pointer;
-  position: relative;
   z-index: 2;
 }
 
 .tariff-band {
   position: absolute;
-  top: 10px;
-  bottom: 10px;
+  top: 0;
+  bottom: 0;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
   pointer-events: none;
   z-index: 1;
 }
@@ -629,8 +630,8 @@ body {
       ranges.forEach(([start, end]) => {
         const band = document.createElement('div');
         band.className = 'tariff-band';
-        band.style.left  = `calc(10px + ${start/96} * (100% - 20px))`;
-        band.style.width = `calc(${(end - start) / 96} * (100% - 20px))`;
+        band.style.left  = `${start / 96 * 100}%`;
+        band.style.width = `${(end - start) / 96 * 100}%`;
         container.appendChild(band);
       });
     }
@@ -701,37 +702,56 @@ body {
 
       if (!dataArray || dataArray.length === 0) return;
 
-      // Find min/max using effective prices (VAT + distribution included)
+      // Effective prices (VAT + distribution included)
       const prices = dataArray.map(d => getEntryEffectivePriceCZK(d));
       const maxPrice = Math.max(...prices);
       const minPrice = Math.min(...prices);
+      const range = maxPrice - minPrice || 1; // guard against flat data
 
-      // Create Y-axis labels (5 levels)
+      // Zero line: % from bottom of chart (0% = minPrice, 100% = maxPrice)
+      const zeroPercent = Math.max(0, Math.min(100, (0 - minPrice) / range * 100));
+
+      // Y-axis labels: top (maxPrice) → bottom (minPrice) in 5 steps
       const steps = 5;
       for (let i = 0; i < steps; i++) {
-        const value = maxPrice - (i * (maxPrice - minPrice) / (steps - 1));
+        const value = maxPrice - (i * range / (steps - 1));
         const label = document.createElement('div');
         label.textContent = formatEffectivePrice(value);
         yAxis.appendChild(label);
       }
 
-      // Add low tariff bands behind bars
+      // Zero line
+      const zeroLine = document.createElement('div');
+      zeroLine.className = 'zero-line';
+      zeroLine.style.bottom = `${zeroPercent}%`;
+      container.appendChild(zeroLine);
+
+      // Low tariff bands behind bars
       addLowTariffBands(container);
 
-      // Render bars
-      dataArray.forEach(entry => {
+      // Bars — absolutely positioned
+      const barWidthPct = 100 / dataArray.length;
+      dataArray.forEach((entry, i) => {
         const bar = document.createElement('div');
         bar.className = `bar ${entry.level}`;
         const effectivePrice = getEntryEffectivePriceCZK(entry);
-        const heightPercent = (effectivePrice / maxPrice) * 100;
-        bar.style.height = `${heightPercent}%`;
+
+        // Bottom of bar anchors at zero (for positive) or at price level (for negative)
+        const barBottomPct = (Math.min(0, effectivePrice) - minPrice) / range * 100;
+        const barHeightPct = Math.max(Math.abs(effectivePrice) / range * 100, 0.4); // min 0.4% visible
+
+        bar.style.left         = `${i * barWidthPct}%`;
+        bar.style.width        = `calc(${barWidthPct}% - 1px)`;
+        bar.style.bottom       = `${barBottomPct}%`;
+        bar.style.height       = `${barHeightPct}%`;
+        bar.style.borderRadius = effectivePrice >= 0 ? '2px 2px 0 0' : '0 0 2px 2px';
 
         const displayPrice = formatEffectivePrice(effectivePrice);
         bar.title = `${String(entry.hour).padStart(2,'0')}:${String(entry.minute).padStart(2,'0')} | ${displayPrice} ${getCurrencyLabel()} | ${entry.level} | Rank: ${entry.levelNum96}/96`;
         container.appendChild(bar);
       });
 
-      // Add current time line for today's chart
+      // Current time line (today only)
       if (showCurrentTime) {
         addCurrentTimeLine(container);
       }
