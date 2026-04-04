@@ -352,23 +352,23 @@ body {
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <h1>⚡ SPOT market Electricity Prices</h1>
+      <h1>⚡ SPOT market Electricity Prices <span style="font-size:14px;font-weight:400;color:#8899aa;">(D57d tariff)</span></h1>
       <div class="header-controls">
         <div class="toggle-container">
-          <span class="toggle-label">VAT 21%</span>
+          <span class="toggle-label">Add VAT</span>
           <div class="toggle-switch" id="vatToggle" onclick="toggleVAT()">
-            <div class="toggle-slider"></div>
-          </div>
-        </div>
-        <div class="toggle-container">
-          <span class="toggle-label">CZK / EUR</span>
-          <div class="toggle-switch" id="currencyToggle" onclick="toggleCurrency()">
             <div class="toggle-slider"></div>
           </div>
         </div>
         <div class="toggle-container">
           <span class="toggle-label">Distribution costs</span>
           <div class="toggle-switch" id="distributionToggle" onclick="toggleDistribution()">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+        <div class="toggle-container">
+          <span class="toggle-label">CZK / EUR</span>
+          <div class="toggle-switch" id="currencyToggle" onclick="toggleCurrency()">
             <div class="toggle-slider"></div>
           </div>
         </div>
@@ -459,13 +459,14 @@ body {
     <div class="chart-section">
       <div class="chart-header">Tomorrow</div>
       <div class="chart-container">
-        <div class="chart-wrapper">
-          <div class="chart-y-axis"></div>
+        <div class="chart-wrapper" id="tomorrowChartWrapper">
+          <div class="chart-y-axis" id="tomorrowYAxis"></div>
           <div class="chart-bars-wrapper">
-            <div class="no-data-message">
+            <div class="chart-bars" id="tomorrowChart" style="display:none;"></div>
+            <div class="no-data-message" id="tomorrowNoData">
               Tomorrow's prices not yet available
             </div>
-            <div class="time-axis">
+            <div class="time-axis" id="tomorrowTimeAxis" style="display:none;">
               <span>00:00</span>
               <span>03:00</span>
               <span>06:00</span>
@@ -503,6 +504,7 @@ body {
     }
 
     let todayData = null;
+    let tomorrowData = null;
     let currentPriceRaw = null;
     let isEUR = false;
     let includeVAT = false;
@@ -526,8 +528,10 @@ body {
       .then(response => response.json())
       .then(data => {
         todayData = data.hoursToday;
-        renderChart('todayChart', 'todayYAxis', data.hoursToday, true);
-        updateCards(data.hoursToday, data.hoursTomorrow);
+        tomorrowData = (data.hoursTomorrow && data.hoursTomorrow.length > 0) ? data.hoursTomorrow : null;
+        renderChart('todayChart', 'todayYAxis', todayData, true);
+        renderTomorrowChart();
+        updateCards(todayData, tomorrowData);
         calculateCost();
       })
       .catch(err => {
@@ -537,30 +541,46 @@ body {
     // Listen to consumption input changes
     document.getElementById('dailyConsumption').addEventListener('input', calculateCost);
 
-    function toggleCurrency() {
-      isEUR = !isEUR;
-      document.getElementById('currencyToggle').classList.toggle('active', isEUR);
-
-      // Re-render everything with new currency
+    function reRenderAll() {
       updateCurrentPrice();
       if (todayData) {
         renderChart('todayChart', 'todayYAxis', todayData, true);
-        updateCards(todayData, null);
+        updateCards(todayData, tomorrowData);
         calculateCost();
       }
+      renderTomorrowChart();
+    }
+
+    function renderTomorrowChart() {
+      const chart   = document.getElementById('tomorrowChart');
+      const noData  = document.getElementById('tomorrowNoData');
+      const timeAx  = document.getElementById('tomorrowTimeAxis');
+      const yAxis   = document.getElementById('tomorrowYAxis');
+
+      if (!tomorrowData || tomorrowData.length === 0) {
+        chart.style.display  = 'none';
+        timeAx.style.display = 'none';
+        noData.style.display = '';
+        yAxis.innerHTML = '';
+        return;
+      }
+
+      noData.style.display = 'none';
+      chart.style.display  = '';
+      timeAx.style.display = '';
+      renderChart('tomorrowChart', 'tomorrowYAxis', tomorrowData, false);
+    }
+
+    function toggleCurrency() {
+      isEUR = !isEUR;
+      document.getElementById('currencyToggle').classList.toggle('active', isEUR);
+      reRenderAll();
     }
 
     function toggleVAT() {
       includeVAT = !includeVAT;
       document.getElementById('vatToggle').classList.toggle('active', includeVAT);
-
-      // Re-render everything with/without VAT
-      updateCurrentPrice();
-      if (todayData) {
-        renderChart('todayChart', 'todayYAxis', todayData, true);
-        updateCards(todayData, null);
-        calculateCost();
-      }
+      reRenderAll();
     }
 
     function applyVAT(price) {
@@ -591,12 +611,7 @@ body {
     function toggleDistribution() {
       includeDistribution = !includeDistribution;
       document.getElementById('distributionToggle').classList.toggle('active', includeDistribution);
-      updateCurrentPrice();
-      if (todayData) {
-        renderChart('todayChart', 'todayYAxis', todayData, true);
-        updateCards(todayData, null);
-        calculateCost();
-      }
+      reRenderAll();
     }
 
     function toggleLowTariffBands() {
