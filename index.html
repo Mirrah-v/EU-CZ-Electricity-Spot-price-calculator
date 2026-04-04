@@ -315,6 +315,30 @@ body {
   }
 }
 
+/* Tooltip */
+#tooltip {
+  position: fixed;
+  background: rgba(4, 16, 32, 0.96);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: white;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+  min-width: 170px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+}
+#tooltip.visible { display: block; }
+#tooltip.pinned { pointer-events: auto; }
+.tt-time { font-size: 13px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+.tt-row { display: flex; justify-content: space-between; gap: 20px; opacity: 0.82; margin-bottom: 3px; font-size: 11px; }
+.tt-divider { border-top: 1px solid rgba(255,255,255,0.15); margin: 6px 0; }
+.tt-total { font-size: 13px; font-weight: 700; opacity: 1 !important; }
+.tt-meta { opacity: 0.45 !important; font-size: 10px; margin-top: 4px; }
+
 .no-data-message {
   height: 240px;
   background: rgba(0, 0, 0, 0.3);
@@ -523,6 +547,9 @@ body {
     </div>
   </div>
 
+  <!-- Tooltip -->
+  <div id="tooltip"></div>
+
   <script>
     const EUR_TO_CZK = 24.50;
 
@@ -550,6 +577,127 @@ body {
     let includeVAT = false;
     let includeDistribution = false;
     let showLowTariffBands = false;
+    let tooltipPinned = false;
+
+    // ── Tooltip ──────────────────────────────────────────────
+    function buildTooltipHTML(entry, effectivePrice) {
+      const h  = String(entry.hour).padStart(2,'0');
+      const m  = String(entry.minute).padStart(2,'0');
+      const totalMins = entry.hour * 60 + entry.minute + 15;
+      const eh = String(Math.floor(totalMins / 60) % 24).padStart(2,'0');
+      const em = String(totalMins % 60).padStart(2,'0');
+
+      const spot    = entry.priceCZK;
+      const vatAmt  = includeVAT ? spot * 0.21 : 0;
+      const low     = isLowTariff(entry.hour, entry.minute);
+      const dist    = getDistCost(low);
+      const cur     = getCurrencyLabel();
+
+      const fmt = v => isEUR ? (v / EUR_TO_CZK).toFixed(2) + ' ' + cur
+                              : Math.round(v) + ' ' + cur;
+      const sign = v => v >= 0 ? '+' : '';
+
+      let html = `<div class="tt-time">${h}:${m} – ${eh}:${em}</div>`;
+      html += `<div class="tt-row"><span>Spot price</span><span>${fmt(spot)}</span></div>`;
+      if (includeVAT)
+        html += `<div class="tt-row"><span>VAT 21%</span><span>${sign(vatAmt)}${fmt(vatAmt)}</span></div>`;
+      if (includeDistribution)
+        html += `<div class="tt-row"><span>Distribution (${low ? 'NT' : 'VT'})</span><span>+${fmt(dist)}</span></div>`;
+      html += `<div class="tt-divider"></div>`;
+      html += `<div class="tt-row tt-total"><span>Total</span><span>${fmt(effectivePrice)}/MWh</span></div>`;
+      html += `<div class="tt-row tt-meta"><span>${entry.level} · rank ${entry.levelNum96}/96</span></div>`;
+      return html;
+    }
+
+    function positionTooltip(x, y) {
+      const tt = document.getElementById('tooltip');
+      const margin = 14;
+      let left = x + margin;
+      let top  = y - tt.offsetHeight / 2;
+      if (left + tt.offsetWidth > window.innerWidth - margin)
+        left = x - tt.offsetWidth - margin;
+      if (top < margin) top = margin;
+      if (top + tt.offsetHeight > window.innerHeight - margin)
+        top = window.innerHeight - tt.offsetHeight - margin;
+      tt.style.left = left + 'px';
+      tt.style.top  = top  + 'px';
+    }
+
+    function showTooltip(e, entry, effectivePrice) {
+      if (tooltipPinned) return;
+      const tt = document.getElementById('tooltip');
+      tt.innerHTML = buildTooltipHTML(entry, effectivePrice);
+      tt.classList.add('visible');
+      tt.classList.remove('pinned');
+      positionTooltip(e.clientX, e.clientY);
+    }
+
+    function moveTooltip(e) {
+      if (tooltipPinned) return;
+      const tt = document.getElementById('tooltip');
+      if (tt.classList.contains('visible')) positionTooltip(e.clientX, e.clientY);
+    }
+
+    function hideTooltip() {
+      if (tooltipPinned) return;
+      document.getElementById('tooltip').classList.remove('visible');
+    }
+
+    function togglePinnedTooltip(e, entry, effectivePrice) {
+      const tt = document.getElementById('tooltip');
+      if (tooltipPinned) {
+        tooltipPinned = false;
+        tt.classList.remove('visible', 'pinned');
+      } else {
+        tooltipPinned = true;
+        tt.innerHTML = buildTooltipHTML(entry, effectivePrice);
+        tt.classList.add('visible', 'pinned');
+        positionTooltip(e.clientX, e.clientY);
+      }
+    }
+
+    function dismissPinnedTooltip() {
+      if (tooltipPinned) {
+        tooltipPinned = false;
+        document.getElementById('tooltip').classList.remove('visible', 'pinned');
+      }
+    }
+
+    document.addEventListener('click', dismissPinnedTooltip);
+
+    // ── Bar-chart simple tooltip (time + effective price only) ──
+    function buildBarTooltipHTML(entry, effectivePrice) {
+      const h   = String(entry.hour).padStart(2, '0');
+      const m   = String(entry.minute).padStart(2, '0');
+      const cur = getCurrencyLabel();
+      const price = isEUR
+        ? (effectivePrice / EUR_TO_CZK).toFixed(2) + ' ' + cur
+        : Math.round(effectivePrice) + ' ' + cur;
+      return `<div class="tt-time">${h}:${m}</div>`
+           + `<div class="tt-row tt-total"><span>${price}/MWh</span></div>`;
+    }
+
+    function showBarTooltip(e, entry, effectivePrice) {
+      if (tooltipPinned) return;
+      const tt = document.getElementById('tooltip');
+      tt.innerHTML = buildBarTooltipHTML(entry, effectivePrice);
+      tt.classList.add('visible');
+      tt.classList.remove('pinned');
+      positionTooltip(e.clientX, e.clientY);
+    }
+
+    function togglePinnedBarTooltip(e, entry, effectivePrice) {
+      const tt = document.getElementById('tooltip');
+      if (tooltipPinned) {
+        tooltipPinned = false;
+        tt.classList.remove('visible', 'pinned');
+      } else {
+        tooltipPinned = true;
+        tt.innerHTML = buildBarTooltipHTML(entry, effectivePrice);
+        tt.classList.add('visible', 'pinned');
+        positionTooltip(e.clientX, e.clientY);
+      }
+    }
 
     // Fetch current price
     fetch('https://spotovaelektrina.cz/api/v1/price/get-actual-price-czk')
@@ -582,6 +730,7 @@ body {
     document.getElementById('dailyConsumption').addEventListener('input', calculateCost);
 
     function reRenderAll() {
+      dismissPinnedTooltip();
       updateCurrentPrice();
       if (todayData) {
         renderChart('todayChart', 'todayYAxis', todayData, true);
@@ -771,6 +920,7 @@ body {
 
       // Bars — absolutely positioned
       const barWidthPct = 100 / dataArray.length;
+      const isTouch = window.matchMedia('(pointer: coarse)').matches;
       dataArray.forEach((entry, i) => {
         const bar = document.createElement('div');
         bar.className = `bar ${entry.level}`;
@@ -786,8 +936,15 @@ body {
         bar.style.height       = `${barHeightPct}%`;
         bar.style.borderRadius = effectivePrice >= 0 ? '2px 2px 0 0' : '0 0 2px 2px';
 
-        const displayPrice = formatEffectivePrice(effectivePrice);
-        bar.title = `${String(entry.hour).padStart(2,'0')}:${String(entry.minute).padStart(2,'0')} | ${displayPrice} ${getCurrencyLabel()} | ${entry.level} | Rank: ${entry.levelNum96}/96`;
+        if (!isTouch) {
+          bar.addEventListener('mouseenter', e => showBarTooltip(e, entry, effectivePrice));
+          bar.addEventListener('mousemove',  e => moveTooltip(e));
+          bar.addEventListener('mouseleave', hideTooltip);
+        }
+        bar.addEventListener('click', e => {
+          e.stopPropagation();
+          if (isTouch) togglePinnedBarTooltip(e, entry, effectivePrice);
+        });
         container.appendChild(bar);
       });
 
