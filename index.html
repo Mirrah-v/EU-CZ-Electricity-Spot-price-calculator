@@ -258,6 +258,18 @@ body {
   border-radius: 2px 2px 0 0;
   transition: opacity 0.2s;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.tariff-band {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .bar:hover {
@@ -354,6 +366,12 @@ body {
             <div class="toggle-slider"></div>
           </div>
         </div>
+        <div class="toggle-container">
+          <span class="toggle-label">Distribution costs</span>
+          <div class="toggle-switch" id="distributionToggle" onclick="toggleDistribution()">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -407,7 +425,15 @@ body {
 
     <!-- Chart: Today -->
     <div class="chart-section">
-      <div class="chart-header">Today</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="chart-header" style="margin-bottom:0;">Today</div>
+        <div class="toggle-container">
+          <span class="toggle-label" style="font-size:12px;">Low tariff slots</span>
+          <div class="toggle-switch" id="lowTariffToggle" onclick="toggleLowTariffBands()">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+      </div>
       <div class="chart-container">
         <div class="chart-wrapper">
           <div class="chart-y-axis" id="todayYAxis"></div>
@@ -458,10 +484,30 @@ body {
 
   <script>
     const EUR_TO_CZK = 24.50;
+
+    // Distribution cost constants (CZK/MWh)
+    const DIST_HIGH_VAT   = 913.27;
+    const DIST_HIGH_NOVAT = 754.77;
+    const DIST_LOW_VAT    = 140.97;
+    const DIST_LOW_NOVAT  = 116.50;
+
+    // Low tariff time ranges (anything NOT listed here is high tariff)
+    // Low: 00-08, 09-12, 13-15, 16-19, 20-24
+    function isLowTariff(hour, minute) {
+      const mins = hour * 60 + minute;
+      return mins < 480 ||
+             (mins >= 540 && mins < 720) ||
+             (mins >= 780 && mins < 900) ||
+             (mins >= 960 && mins < 1140) ||
+             mins >= 1200;
+    }
+
     let todayData = null;
     let currentPriceRaw = null;
     let isEUR = false;
     let includeVAT = false;
+    let includeDistribution = false;
+    let showLowTariffBands = false;
 
     // Fetch current price
     fetch('https://spotovaelektrina.cz/api/v1/price/get-actual-price-czk')
@@ -521,22 +567,65 @@ body {
       return includeVAT ? price * 1.21 : price;
     }
 
-    function convertPrice(priceCZK) {
-      let price = applyVAT(priceCZK);
-      if (isEUR) {
-        return (price / EUR_TO_CZK).toFixed(2);
-      }
-      return Math.round(price);
+    function getDistCost(low) {
+      if (!includeDistribution) return 0;
+      if (low) return includeVAT ? DIST_LOW_VAT : DIST_LOW_NOVAT;
+      return includeVAT ? DIST_HIGH_VAT : DIST_HIGH_NOVAT;
+    }
+
+    // Returns effective price in CZK with VAT + distribution applied
+    function getEntryEffectivePriceCZK(entry) {
+      return applyVAT(entry.priceCZK) + getDistCost(isLowTariff(entry.hour, entry.minute));
+    }
+
+    // Format an already-effective CZK price (VAT/dist already included)
+    function formatEffectivePrice(czk) {
+      if (isEUR) return (czk / EUR_TO_CZK).toFixed(2);
+      return Math.round(czk);
     }
 
     function getCurrencyLabel() {
       return isEUR ? 'EUR' : 'CZK';
     }
 
+    function toggleDistribution() {
+      includeDistribution = !includeDistribution;
+      document.getElementById('distributionToggle').classList.toggle('active', includeDistribution);
+      updateCurrentPrice();
+      if (todayData) {
+        renderChart('todayChart', 'todayYAxis', todayData, true);
+        updateCards(todayData, null);
+        calculateCost();
+      }
+    }
+
+    function toggleLowTariffBands() {
+      showLowTariffBands = !showLowTariffBands;
+      document.getElementById('lowTariffToggle').classList.toggle('active', showLowTariffBands);
+      if (todayData) {
+        renderChart('todayChart', 'todayYAxis', todayData, true);
+      }
+    }
+
+    function addLowTariffBands(container) {
+      if (!showLowTariffBands) return;
+      // [slotStart, slotEnd] out of 96 quarter-hour slots
+      const ranges = [[0,32],[36,48],[52,60],[64,76],[80,96]];
+      ranges.forEach(([start, end]) => {
+        const band = document.createElement('div');
+        band.className = 'tariff-band';
+        band.style.left  = `calc(10px + ${start/96} * (100% - 20px))`;
+        band.style.width = `calc(${(end - start) / 96} * (100% - 20px))`;
+        container.appendChild(band);
+      });
+    }
+
     function updateCurrentPrice() {
       if (currentPriceRaw === null) return;
-
-      document.getElementById('currentPrice').textContent = convertPrice(currentPriceRaw);
+      const now = new Date();
+      const low = isLowTariff(now.getHours(), now.getMinutes());
+      const effective = applyVAT(currentPriceRaw) + getDistCost(low);
+      document.getElementById('currentPrice').textContent = formatEffectivePrice(effective);
       document.getElementById('currentPriceCurrency').textContent = `${getCurrencyLabel()}/MWh`;
     }
 
@@ -553,11 +642,10 @@ body {
       // Linear distribution: divide daily consumption evenly across 96 slots
       const consumptionPerSlot = dailyConsumption / 96; // kWh per 15-min slot
 
-      // Calculate total cost
+      // Calculate total cost (effective price includes VAT + distribution if enabled)
       let totalCost = 0;
       todayData.forEach(entry => {
-        // Price is in CZK/MWh, convert to CZK/kWh by dividing by 1000
-        const pricePerKwh = applyVAT(entry.priceCZK) / 1000;
+        const pricePerKwh = getEntryEffectivePriceCZK(entry) / 1000;
         const slotCost = consumptionPerSlot * pricePerKwh;
         totalCost += slotCost;
       });
@@ -598,8 +686,8 @@ body {
 
       if (!dataArray || dataArray.length === 0) return;
 
-      // Find min/max for scaling
-      const prices = dataArray.map(d => applyVAT(d.priceCZK));
+      // Find min/max using effective prices (VAT + distribution included)
+      const prices = dataArray.map(d => getEntryEffectivePriceCZK(d));
       const maxPrice = Math.max(...prices);
       const minPrice = Math.min(...prices);
 
@@ -608,19 +696,22 @@ body {
       for (let i = 0; i < steps; i++) {
         const value = maxPrice - (i * (maxPrice - minPrice) / (steps - 1));
         const label = document.createElement('div');
-        label.textContent = convertPrice(value);
+        label.textContent = formatEffectivePrice(value);
         yAxis.appendChild(label);
       }
+
+      // Add low tariff bands behind bars
+      addLowTariffBands(container);
 
       // Render bars
       dataArray.forEach(entry => {
         const bar = document.createElement('div');
         bar.className = `bar ${entry.level}`;
-        const price = applyVAT(entry.priceCZK);
-        const heightPercent = (price / maxPrice) * 100;
+        const effectivePrice = getEntryEffectivePriceCZK(entry);
+        const heightPercent = (effectivePrice / maxPrice) * 100;
         bar.style.height = `${heightPercent}%`;
 
-        const displayPrice = convertPrice(entry.priceCZK);
+        const displayPrice = formatEffectivePrice(effectivePrice);
         bar.title = `${String(entry.hour).padStart(2,'0')}:${String(entry.minute).padStart(2,'0')} | ${displayPrice} ${getCurrencyLabel()} | ${entry.level} | Rank: ${entry.levelNum96}/96`;
         container.appendChild(bar);
       });
@@ -634,39 +725,38 @@ body {
     function updateCards(todayData, tomorrowData) {
       if (!todayData || todayData.length === 0) return;
 
-      // Find cheapest
+      // Find cheapest (by effective price)
       let cheapest = todayData[0];
       todayData.forEach(entry => {
-        if (entry.priceCZK < cheapest.priceCZK) {
+        if (getEntryEffectivePriceCZK(entry) < getEntryEffectivePriceCZK(cheapest)) {
           cheapest = entry;
         }
       });
 
-      // Update cheapest card
       document.getElementById('cheapestTime').textContent =
         `${String(cheapest.hour).padStart(2,'0')}:${String(cheapest.minute).padStart(2,'0')}`;
       document.getElementById('cheapestPrice').textContent =
-        `${convertPrice(cheapest.priceCZK)} ${getCurrencyLabel()}`;
+        `${formatEffectivePrice(getEntryEffectivePriceCZK(cheapest))} ${getCurrencyLabel()}`;
 
-      // Find most expensive
+      // Find most expensive (by effective price)
       let expensive = todayData[0];
       todayData.forEach(entry => {
-        if (entry.priceCZK > expensive.priceCZK) {
+        if (getEntryEffectivePriceCZK(entry) > getEntryEffectivePriceCZK(expensive)) {
           expensive = entry;
         }
       });
 
-      // Update most expensive card
       document.getElementById('expensiveTime').textContent =
         `${String(expensive.hour).padStart(2,'0')}:${String(expensive.minute).padStart(2,'0')}`;
       document.getElementById('expensivePrice').textContent =
-        `${convertPrice(expensive.priceCZK)} ${getCurrencyLabel()}`;
+        `${formatEffectivePrice(getEntryEffectivePriceCZK(expensive))} ${getCurrencyLabel()}`;
 
       // Calculate price range
-      const minPrice = Math.min(...todayData.map(e => e.priceCZK));
-      const maxPrice = Math.max(...todayData.map(e => e.priceCZK));
+      const effectivePrices = todayData.map(e => getEntryEffectivePriceCZK(e));
+      const minPrice = Math.min(...effectivePrices);
+      const maxPrice = Math.max(...effectivePrices);
       document.getElementById('priceRange').textContent =
-        `${convertPrice(minPrice)} - ${convertPrice(maxPrice)}`;
+        `${formatEffectivePrice(minPrice)} - ${formatEffectivePrice(maxPrice)}`;
       document.getElementById('priceRangeCurrency').textContent = getCurrencyLabel();
 
       // Count low price slots
