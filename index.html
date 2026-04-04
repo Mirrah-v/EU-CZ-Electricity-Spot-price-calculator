@@ -69,6 +69,8 @@ body {
   cursor: pointer;
   transition: background 0.3s;
   border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .toggle-switch.active {
@@ -236,6 +238,7 @@ body {
   gap: 2px;
   margin-bottom: 10px;
   position: relative;
+  overflow: hidden;
 }
 
 .current-time-line {
@@ -251,6 +254,7 @@ body {
 
 .bar {
   flex: 1;
+  min-width: 0;
   border-radius: 2px 2px 0 0;
   transition: opacity 0.2s;
   cursor: pointer;
@@ -308,12 +312,26 @@ body {
 }
 
 @media (max-width: 640px) {
+  body {
+    padding: 12px;
+  }
   .cards-grid, .cards-grid-3 {
     grid-template-columns: 1fr;
   }
-  .header-controls {
+  .header {
     flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
+  }
+  .header h1 {
+    font-size: 18px;
+  }
+  .header-controls {
+    flex-direction: row;
+    gap: 16px;
+  }
+  .chart-section {
+    padding: 16px;
   }
 }
 </style>
