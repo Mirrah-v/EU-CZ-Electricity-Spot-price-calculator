@@ -217,9 +217,20 @@ body {
   justify-content: space-between;
   font-size: 10px;
   opacity: 0.7;
-  min-width: 50px;
+  min-width: 36px;
   text-align: right;
-  padding-right: 8px;
+  padding-right: 6px;
+  position: relative;
+}
+
+.y-axis-zero {
+  position: absolute;
+  right: 6px;
+  font-size: 10px;
+  opacity: 0.9;
+  color: rgba(255,255,255,0.8);
+  transform: translateY(50%);
+  pointer-events: none;
 }
 
 .chart-bars-wrapper {
@@ -432,7 +443,7 @@ body {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div class="chart-header" style="margin-bottom:0;">Today</div>
         <div class="toggle-container">
-          <span class="toggle-label" style="font-size:12px;">Low tariff slots</span>
+          <span class="toggle-label" style="font-size:12px;">Show Low Tariff Slots</span>
           <div class="toggle-switch" id="lowTariffToggle" onclick="toggleLowTariffBands()">
             <div class="toggle-slider"></div>
           </div>
@@ -624,6 +635,7 @@ body {
       if (todayData) {
         renderChart('todayChart', 'todayYAxis', todayData, true);
       }
+      renderTomorrowChart();
     }
 
     function addLowTariffBands(container) {
@@ -721,6 +733,16 @@ body {
         const label = document.createElement('div');
         label.textContent = formatEffectivePrice(value);
         yAxis.appendChild(label);
+      }
+
+      // Zero label on Y-axis — only when chart spans negative AND positive
+      if (minPrice < 0 && maxPrice > 0) {
+        const zeroLabel = document.createElement('div');
+        zeroLabel.className = 'y-axis-zero';
+        // zeroPercent is % from bottom; convert to % from top for 'bottom' CSS
+        zeroLabel.style.bottom = `calc(${zeroPercent}% - 0.5em)`;
+        zeroLabel.textContent = '0';
+        yAxis.appendChild(zeroLabel);
       }
 
       // Zero line
