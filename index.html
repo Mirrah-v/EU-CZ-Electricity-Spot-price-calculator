@@ -223,15 +223,6 @@ body {
   position: relative;
 }
 
-.y-axis-zero {
-  position: absolute;
-  right: 6px;
-  font-size: 10px;
-  opacity: 0.9;
-  color: rgba(255,255,255,0.8);
-  transform: translateY(50%);
-  pointer-events: none;
-}
 
 .chart-bars-wrapper {
   flex: 1;
@@ -306,6 +297,22 @@ body {
   padding: 0 10px;
   font-size: 11px;
   opacity: 0.7;
+}
+
+/* Default: short numeric labels (mobile portrait) */
+.time-axis span {
+  font-size: 0;
+}
+.time-axis span::before {
+  font-size: 11px;
+  content: attr(data-short);
+}
+
+/* Landscape / wider screens: full HH:MM labels */
+@media (orientation: landscape), (min-width: 641px) {
+  .time-axis span::before {
+    content: attr(data-full);
+  }
 }
 
 .no-data-message {
@@ -473,15 +480,15 @@ body {
           <div class="chart-bars-wrapper">
             <div class="chart-bars" id="todayChart"></div>
             <div class="time-axis">
-              <span>0</span>
-              <span>3</span>
-              <span>6</span>
-              <span>9</span>
-              <span>12</span>
-              <span>15</span>
-              <span>18</span>
-              <span>21</span>
-              <span>24</span>
+              <span data-short="0"  data-full="00:00"></span>
+              <span data-short="3"  data-full="03:00"></span>
+              <span data-short="6"  data-full="06:00"></span>
+              <span data-short="9"  data-full="09:00"></span>
+              <span data-short="12" data-full="12:00"></span>
+              <span data-short="15" data-full="15:00"></span>
+              <span data-short="18" data-full="18:00"></span>
+              <span data-short="21" data-full="21:00"></span>
+              <span data-short="24" data-full="24:00"></span>
             </div>
           </div>
         </div>
@@ -500,15 +507,15 @@ body {
               Tomorrow's prices not yet available
             </div>
             <div class="time-axis" id="tomorrowTimeAxis" style="display:none;">
-              <span>0</span>
-              <span>3</span>
-              <span>6</span>
-              <span>9</span>
-              <span>12</span>
-              <span>15</span>
-              <span>18</span>
-              <span>21</span>
-              <span>24</span>
+              <span data-short="0"  data-full="00:00"></span>
+              <span data-short="3"  data-full="03:00"></span>
+              <span data-short="6"  data-full="06:00"></span>
+              <span data-short="9"  data-full="09:00"></span>
+              <span data-short="12" data-full="12:00"></span>
+              <span data-short="15" data-full="15:00"></span>
+              <span data-short="18" data-full="18:00"></span>
+              <span data-short="21" data-full="21:00"></span>
+              <span data-short="24" data-full="24:00"></span>
             </div>
           </div>
         </div>
@@ -751,16 +758,6 @@ body {
         const label = document.createElement('div');
         label.textContent = formatEffectivePrice(value);
         yAxis.appendChild(label);
-      }
-
-      // Zero label on Y-axis — only when chart spans negative AND positive
-      if (minPrice < 0 && maxPrice > 0) {
-        const zeroLabel = document.createElement('div');
-        zeroLabel.className = 'y-axis-zero';
-        // zeroPercent is % from bottom; convert to % from top for 'bottom' CSS
-        zeroLabel.style.bottom = `calc(${zeroPercent}% - 0.5em)`;
-        zeroLabel.textContent = '0';
-        yAxis.appendChild(zeroLabel);
       }
 
       // Zero line
