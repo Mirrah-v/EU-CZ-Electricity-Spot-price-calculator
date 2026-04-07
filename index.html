@@ -16,6 +16,12 @@ body {
   min-height: 100vh;
   padding: 24px;
   color: white;
+  transition: background 0.35s, color 0.35s;
+}
+
+body.light {
+  background: linear-gradient(145deg, #eff3f6 0%, #dde5ee 100%);
+  color: #1c1c1e;
 }
 
 .container {
@@ -34,11 +40,36 @@ body {
   justify-content: space-between;
   align-items: center;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.35s, border-color 0.35s, box-shadow 0.35s;
+}
+
+body.light .header {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(0, 0, 0, 0.07);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.09);
 }
 
 .header h1 {
   font-size: 24px;
   font-weight: 600;
+}
+
+.header-subtitle {
+  font-size: 12px;
+  color: #8899aa;
+  margin-top: 4px;
+}
+
+body.light .header-subtitle {
+  color: #5a7080;
+}
+
+.subtitle-accent {
+  color: #aabbcc;
+}
+
+body.light .subtitle-accent {
+  color: #2e6090;
 }
 
 .header-controls {
@@ -60,6 +91,11 @@ body {
   opacity: 0.9;
 }
 
+body.light .toggle-label {
+  color: #1c1c1e;
+  opacity: 0.85;
+}
+
 .toggle-switch {
   position: relative;
   width: 50px;
@@ -67,15 +103,25 @@ body {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 13px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.3s, border-color 0.3s;
   border: 1px solid rgba(255, 255, 255, 0.3);
   flex-shrink: 0;
   overflow: hidden;
 }
 
+body.light .toggle-switch {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
 .toggle-switch.active {
   background: rgba(76, 175, 80, 0.5);
   border-color: rgba(76, 175, 80, 0.7);
+}
+
+body.light .toggle-switch.active {
+  background: rgba(52, 199, 89, 0.35);
+  border-color: rgba(52, 199, 89, 0.65);
 }
 
 .toggle-slider {
@@ -88,6 +134,10 @@ body {
   border-radius: 50%;
   transition: transform 0.3s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+body.light .toggle-slider {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .toggle-switch.active .toggle-slider {
@@ -114,13 +164,23 @@ body {
   backdrop-filter: blur(10px);
   padding: 20px;
   border-radius: 12px;
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.35s, border-color 0.35s, box-shadow 0.35s;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.light .card {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.07);
 }
 
 .card:hover {
   transform: translateY(-2px);
   background: rgba(11, 42, 74, 0.8);
+}
+
+body.light .card:hover {
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .card-label {
@@ -129,6 +189,10 @@ body {
   opacity: 0.8;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+}
+
+body.light .card-label {
+  opacity: 0.55;
 }
 
 .card-value {
@@ -142,23 +206,16 @@ body {
   opacity: 0.9;
 }
 
-.card.highlight-green .card-value {
-  color: #4caf50;
+body.light .card-secondary {
+  opacity: 0.65;
 }
 
-.card.highlight-red .card-value {
-  color: #f44336;
-}
-
-.card.highlight-orange .card-value {
-  color: #ffa726;
-}
+.card.highlight-green .card-value { color: #4caf50; }
+.card.highlight-red   .card-value { color: #f44336; }
+.card.highlight-orange .card-value { color: #ffa726; }
 
 /* Input Card */
-.card-input {
-  display: flex;
-  flex-direction: column;
-}
+.card-input { display: flex; flex-direction: column; }
 
 .card-input input {
   background: rgba(255, 255, 255, 0.1);
@@ -170,7 +227,13 @@ body {
   font-weight: 600;
   margin-top: 4px;
   outline: none;
-  transition: all 0.3s;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+
+body.light .card-input input {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.14);
+  color: #1c1c1e;
 }
 
 .card-input input:focus {
@@ -178,9 +241,13 @@ body {
   border-color: rgba(255, 255, 255, 0.4);
 }
 
-.card-input input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+body.light .card-input input:focus {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 90, 180, 0.35);
 }
+
+.card-input input::placeholder { color: rgba(255, 255, 255, 0.5); }
+body.light .card-input input::placeholder { color: rgba(0, 0, 0, 0.35); }
 
 /* Chart Sections */
 .chart-section {
@@ -190,6 +257,13 @@ body {
   border-radius: 12px;
   margin-bottom: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.35s, border-color 0.35s, box-shadow 0.35s;
+}
+
+body.light .chart-section {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.07);
 }
 
 .chart-header {
@@ -197,8 +271,24 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 16px;
   opacity: 0.9;
+}
+
+/* Chart controls row (title + toggles) */
+.chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chart-controls-toggles {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .chart-container {
@@ -223,7 +313,6 @@ body {
   position: relative;
 }
 
-
 .chart-bars-wrapper {
   flex: 1;
   position: relative;
@@ -236,12 +325,16 @@ body {
   margin-bottom: 10px;
   position: relative;
   overflow: hidden;
+  transition: background 0.35s;
+}
+
+body.light .chart-bars {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .current-time-line {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 0; bottom: 0;
   width: 2px;
   background: transparent;
   border-left: 2px dashed rgba(200, 200, 200, 0.5);
@@ -249,15 +342,20 @@ body {
   z-index: 10;
 }
 
+body.light .current-time-line {
+  border-left-color: rgba(0, 0, 0, 0.22);
+}
+
 .zero-line {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 0; right: 0;
   height: 1px;
   background: rgba(255, 255, 255, 0.5);
   pointer-events: none;
   z-index: 5;
 }
+
+body.light .zero-line { background: rgba(0, 0, 0, 0.22); }
 
 .bar {
   position: absolute;
@@ -268,28 +366,18 @@ body {
 
 .tariff-band {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 0; bottom: 0;
   background: rgba(255, 255, 255, 0.06);
   pointer-events: none;
   z-index: 1;
 }
 
-.bar:hover {
-  opacity: 0.8;
-}
+body.light .tariff-band { background: rgba(0, 0, 0, 0.04); }
 
-.bar.low {
-  background: #4caf50;
-}
-
-.bar.medium {
-  background: #ffa726;
-}
-
-.bar.high {
-  background: #f44336;
-}
+.bar:hover  { opacity: 0.8; }
+.bar.low    { background: #4caf50; }
+.bar.medium { background: #ffa726; }
+.bar.high   { background: #f44336; }
 
 .time-axis {
   display: flex;
@@ -300,19 +388,12 @@ body {
 }
 
 /* Default: short numeric labels (mobile portrait) */
-.time-axis span {
-  font-size: 0;
-}
-.time-axis span::before {
-  font-size: 11px;
-  content: attr(data-short);
-}
+.time-axis span { font-size: 0; }
+.time-axis span::before { font-size: 11px; content: attr(data-short); }
 
 /* Landscape / wider screens: full HH:MM labels */
 @media (orientation: landscape), (min-width: 641px) {
-  .time-axis span::before {
-    content: attr(data-full);
-  }
+  .time-axis span::before { content: attr(data-full); }
 }
 
 /* Tooltip */
@@ -327,17 +408,25 @@ body {
   pointer-events: none;
   z-index: 1000;
   display: none;
-  min-width: 170px;
+  min-width: 130px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.6);
   backdrop-filter: blur(10px);
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
+
+body.light #tooltip {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1c1c1e;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
 #tooltip.visible { display: block; }
-#tooltip.pinned { pointer-events: auto; }
-.tt-time { font-size: 13px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
-.tt-row { display: flex; justify-content: space-between; gap: 20px; opacity: 0.82; margin-bottom: 3px; font-size: 11px; }
-.tt-divider { border-top: 1px solid rgba(255,255,255,0.15); margin: 6px 0; }
+#tooltip.pinned  { pointer-events: auto; }
+
+.tt-time  { font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.3px; }
+.tt-row   { display: flex; justify-content: space-between; gap: 16px; opacity: 0.82; margin-bottom: 3px; font-size: 11px; }
 .tt-total { font-size: 13px; font-weight: 700; opacity: 1 !important; }
-.tt-meta { opacity: 0.45 !important; font-size: 10px; margin-top: 4px; }
 
 .no-data-message {
   height: 240px;
@@ -348,39 +437,33 @@ body {
   justify-content: center;
   font-size: 16px;
   opacity: 0.6;
+  transition: background 0.35s;
+}
+
+body.light .no-data-message {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1c1c1e;
 }
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .cards-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 1024px) {
-  .cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .cards-grid-3 {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .cards-grid   { grid-template-columns: repeat(2, 1fr); }
+  .cards-grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {
-  body {
-    padding: 12px;
-  }
-  .cards-grid, .cards-grid-3 {
-    grid-template-columns: 1fr;
-  }
+  body { padding: 12px; }
+  .cards-grid, .cards-grid-3 { grid-template-columns: 1fr; }
   .header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  .header h1 {
-    font-size: 18px;
-  }
+  .header h1 { font-size: 18px; }
   .header-controls {
     flex-direction: row;
     gap: 12px;
@@ -396,15 +479,25 @@ body {
     font-size: 10px;
     text-align: center;
   }
-  .chart-section {
-    padding: 16px;
+  .chart-section { padding: 16px; }
+  .chart-y-axis  { min-width: 24px; padding-right: 4px; }
+  .chart-wrapper { gap: 4px; }
+  /* Chart controls: title full width, toggles wrap below */
+  .chart-controls { gap: 10px; }
+  .chart-header   { width: 100%; }
+  .chart-controls-toggles {
+    gap: 10px;
+    width: 100%;
   }
-  .chart-y-axis {
-    min-width: 24px;
-    padding-right: 4px;
-  }
-  .chart-wrapper {
+  .chart-controls-toggles .toggle-container {
+    flex-direction: column;
+    align-items: center;
     gap: 4px;
+    flex: 1;
+  }
+  .chart-controls-toggles .toggle-label {
+    font-size: 10px;
+    text-align: center;
   }
 }
 </style>
@@ -415,23 +508,23 @@ body {
     <div class="header">
       <div>
         <h1>⚡ SPOT market Electricity Prices</h1>
-        <div style="font-size:12px;color:#8899aa;margin-top:4px;">Custom report for <strong style="color:#aabbcc;">ČEZ Distribuce</strong> area · Tariff <strong style="color:#aabbcc;">D57d</strong> · Distribution costs per ČEZ 2026 regulated rates</div>
+        <div id="headerSubtitle" class="header-subtitle">Custom report for <strong class="subtitle-accent">ČEZ Distribuce</strong> area · Tariff <strong class="subtitle-accent">D57d</strong> · Distribution costs per ČEZ 2026 regulated rates</div>
       </div>
       <div class="header-controls">
         <div class="toggle-container">
-          <span class="toggle-label">Add VAT</span>
-          <div class="toggle-switch" id="vatToggle" onclick="toggleVAT()">
+          <span class="toggle-label" id="darkLightLabel">Dark / Light</span>
+          <div class="toggle-switch active" id="darkModeToggle" onclick="toggleDarkMode()">
             <div class="toggle-slider"></div>
           </div>
         </div>
         <div class="toggle-container">
-          <span class="toggle-label">Distribution costs</span>
-          <div class="toggle-switch" id="distributionToggle" onclick="toggleDistribution()">
+          <span class="toggle-label" id="czEnLabel">CZ / EN</span>
+          <div class="toggle-switch active" id="czEnToggle" onclick="toggleLanguage()">
             <div class="toggle-slider"></div>
           </div>
         </div>
         <div class="toggle-container">
-          <span class="toggle-label">CZK / EUR</span>
+          <span class="toggle-label" id="currencyLabel">CZK / EUR</span>
           <div class="toggle-switch" id="currencyToggle" onclick="toggleCurrency()">
             <div class="toggle-slider"></div>
           </div>
@@ -439,62 +532,76 @@ body {
       </div>
     </div>
 
-    <!-- Callout Cards - Top Row (5 cards now) -->
+    <!-- Callout Cards - Top Row -->
     <div class="cards-grid">
       <div class="card">
-        <div class="card-label">⚡ Current Price</div>
+        <div class="card-label" id="lbl-currentPrice">⚡ Current Price</div>
         <div class="card-value" id="currentPrice">—</div>
         <div class="card-secondary" id="currentPriceCurrency">CZK/MWh</div>
       </div>
       <div class="card highlight-green">
-        <div class="card-label">💚 Cheapest Hour</div>
-        <div class="card-value" id="cheapestTime">03:00</div>
-        <div class="card-secondary" id="cheapestPrice">1,147 CZK</div>
+        <div class="card-label" id="lbl-cheapest">💚 Cheapest Hour</div>
+        <div class="card-value" id="cheapestTime">—</div>
+        <div class="card-secondary" id="cheapestPrice">—</div>
       </div>
       <div class="card highlight-red">
-        <div class="card-label">💰 Most Expensive</div>
-        <div class="card-value" id="expensiveTime">17:15</div>
-        <div class="card-secondary" id="expensivePrice">3,938 CZK</div>
+        <div class="card-label" id="lbl-expensive">💰 Most Expensive</div>
+        <div class="card-value" id="expensiveTime">—</div>
+        <div class="card-secondary" id="expensivePrice">—</div>
       </div>
       <div class="card card-input">
-        <div class="card-label">📊 Daily Consumption</div>
+        <div class="card-label" id="lbl-consumption">📊 Daily Consumption</div>
         <input type="number" id="dailyConsumption" placeholder="50" value="50" min="0" step="1">
         <div class="card-secondary" style="margin-top: 6px;">kWh</div>
       </div>
       <div class="card highlight-orange">
-        <div class="card-label">💵 Estimated Cost</div>
+        <div class="card-label" id="lbl-estCost">💵 Estimated Cost</div>
         <div class="card-value" id="estimatedCost">—</div>
         <div class="card-secondary" id="estimatedCostCurrency">CZK/day</div>
       </div>
     </div>
 
-    <!-- Callout Cards - Bottom Row (3 cards) -->
+    <!-- Callout Cards - Bottom Row -->
     <div class="cards-grid-3">
       <div class="card">
-        <div class="card-label">📈 Price Range</div>
-        <div class="card-value" id="priceRange">1,147 - 3,938</div>
+        <div class="card-label" id="lbl-priceRange">📈 Price Range</div>
+        <div class="card-value" id="priceRange">—</div>
         <div class="card-secondary" id="priceRangeCurrency">CZK</div>
       </div>
       <div class="card highlight-green">
-        <div class="card-label">✅ Low Price Slots</div>
-        <div class="card-value" id="lowSlotsCount">38</div>
-        <div class="card-secondary">of 96 slots</div>
+        <div class="card-label" id="lbl-lowSlots">✅ Low Price Slots</div>
+        <div class="card-value" id="lowSlotsCount">—</div>
+        <div class="card-secondary" id="lbl-ofSlots">of 96 slots</div>
       </div>
       <div class="card">
-        <div class="card-label">🔮 Tomorrow vs Today</div>
+        <div class="card-label" id="lbl-tomorrowComp">🔮 Tomorrow vs Today</div>
         <div class="card-value" id="tomorrowComparison">—</div>
-        <div class="card-secondary">No data yet</div>
+        <div class="card-secondary" id="lbl-noDataYet">No data yet</div>
       </div>
     </div>
 
     <!-- Chart: Today -->
     <div class="chart-section">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div class="chart-header" style="margin-bottom:0;">Today</div>
-        <div class="toggle-container">
-          <span class="toggle-label" style="font-size:12px;">Show Low Tariff Slots</span>
-          <div class="toggle-switch" id="lowTariffToggle" onclick="toggleLowTariffBands()">
-            <div class="toggle-slider"></div>
+      <div class="chart-controls">
+        <div class="chart-header" id="todayHeader">Today</div>
+        <div class="chart-controls-toggles">
+          <div class="toggle-container">
+            <span class="toggle-label" id="vatLabel">Add VAT</span>
+            <div class="toggle-switch" id="vatToggle" onclick="toggleVAT()">
+              <div class="toggle-slider"></div>
+            </div>
+          </div>
+          <div class="toggle-container">
+            <span class="toggle-label" id="distributionLabel">Distribution</span>
+            <div class="toggle-switch" id="distributionToggle" onclick="toggleDistribution()">
+              <div class="toggle-slider"></div>
+            </div>
+          </div>
+          <div class="toggle-container">
+            <span class="toggle-label" id="lowTariffLabel">Low Tariff Slots</span>
+            <div class="toggle-switch" id="lowTariffToggle" onclick="toggleLowTariffBands()">
+              <div class="toggle-slider"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -521,7 +628,7 @@ body {
 
     <!-- Chart: Tomorrow -->
     <div class="chart-section">
-      <div class="chart-header">Tomorrow</div>
+      <div class="chart-header" id="tomorrowHeader" style="margin-bottom:16px;">Tomorrow</div>
       <div class="chart-container">
         <div class="chart-wrapper" id="tomorrowChartWrapper">
           <div class="chart-y-axis" id="tomorrowYAxis"></div>
@@ -559,7 +666,63 @@ body {
     const DIST_LOW_VAT    = 140.97;
     const DIST_LOW_NOVAT  = 116.50;
 
-    // Low tariff time ranges (anything NOT listed here is high tariff)
+    // ── Translations ──────────────────────────────────────────
+    const LANG = {
+      en: {
+        title:         '⚡ SPOT market Electricity Prices',
+        subtitle:      'Custom report for <strong class="subtitle-accent">ČEZ Distribuce</strong> area · Tariff <strong class="subtitle-accent">D57d</strong> · Distribution costs per ČEZ 2026 regulated rates',
+        darkLight:     'Dark / Light',
+        czEn:          'CZ / EN',
+        currency:      'CZK / EUR',
+        lCurrentPrice: '⚡ Current Price',
+        lCheapest:     '💚 Cheapest Hour',
+        lExpensive:    '💰 Most Expensive',
+        lConsumption:  '📊 Daily Consumption',
+        lEstCost:      '💵 Estimated Cost',
+        lPriceRange:   '📈 Price Range',
+        lLowSlots:     '✅ Low Price Slots',
+        lTomorrow:     '🔮 Tomorrow vs Today',
+        ofSlots:       'of 96 slots',
+        noDataYet:     'No data yet',
+        today:         'Today',
+        tomorrow:      'Tomorrow',
+        addVAT:        'Add VAT',
+        distribution:  'Distribution',
+        showLowTariff: 'Low Tariff Slots',
+        tomorrowNA:    "Tomorrow's prices not yet available",
+        perMWh:        '/MWh',
+        perDay:        '/day',
+      },
+      cz: {
+        title:         '⚡ SPOT ceny elektřiny',
+        subtitle:      'Vlastní přehled pro oblast <strong class="subtitle-accent">ČEZ Distribuce</strong> · Tarif <strong class="subtitle-accent">D57d</strong> · Distribuční náklady dle regulovaných sazeb ČEZ 2026',
+        darkLight:     'Tmavý / Světlý',
+        czEn:          'CZ / EN',
+        currency:      'CZK / EUR',
+        lCurrentPrice: '⚡ Aktuální cena',
+        lCheapest:     '💚 Nejlevnější hodina',
+        lExpensive:    '💰 Nejdražší hodina',
+        lConsumption:  '📊 Denní spotřeba',
+        lEstCost:      '💵 Odhadované náklady',
+        lPriceRange:   '📈 Cenové rozpětí',
+        lLowSlots:     '✅ Levné úseky',
+        lTomorrow:     '🔮 Zítra vs. Dnes',
+        ofSlots:       'ze 96 úseků',
+        noDataYet:     'Zatím bez dat',
+        today:         'Dnes',
+        tomorrow:      'Zítra',
+        addVAT:        'Přidat DPH',
+        distribution:  'Distribuce',
+        showLowTariff: 'Pásma NT',
+        tomorrowNA:    'Zítřejší ceny zatím nejsou k dispozici',
+        perMWh:        '/MWh',
+        perDay:        '/den',
+      }
+    };
+
+    function getLang() { return LANG[isEN ? 'en' : 'cz']; }
+
+    // Low tariff time ranges
     // Low: 00-08, 09-12, 13-15, 16-19, 20-24
     function isLowTariff(hour, minute) {
       const mins = hour * 60 + minute;
@@ -570,43 +733,27 @@ body {
              mins >= 1200;
     }
 
-    let todayData = null;
-    let tomorrowData = null;
-    let currentPriceRaw = null;
-    let isEUR = false;
-    let includeVAT = false;
+    let todayData           = null;
+    let tomorrowData        = null;
+    let currentPriceRaw     = null;
+    let isEUR               = false;
+    let includeVAT          = false;
     let includeDistribution = false;
-    let showLowTariffBands = false;
-    let tooltipPinned = false;
+    let showLowTariffBands  = false;
+    let tooltipPinned       = false;
+    let isDark              = true;  // dark mode is default
+    let isEN                = true;  // English is default
 
     // ── Tooltip ──────────────────────────────────────────────
-    function buildTooltipHTML(entry, effectivePrice) {
-      const h  = String(entry.hour).padStart(2,'0');
-      const m  = String(entry.minute).padStart(2,'0');
-      const totalMins = entry.hour * 60 + entry.minute + 15;
-      const eh = String(Math.floor(totalMins / 60) % 24).padStart(2,'0');
-      const em = String(totalMins % 60).padStart(2,'0');
-
-      const spot    = entry.priceCZK;
-      const vatAmt  = includeVAT ? spot * 0.21 : 0;
-      const low     = isLowTariff(entry.hour, entry.minute);
-      const dist    = getDistCost(low);
-      const cur     = getCurrencyLabel();
-
-      const fmt = v => isEUR ? (v / EUR_TO_CZK).toFixed(2) + ' ' + cur
-                              : Math.round(v) + ' ' + cur;
-      const sign = v => v >= 0 ? '+' : '';
-
-      let html = `<div class="tt-time">${h}:${m} – ${eh}:${em}</div>`;
-      html += `<div class="tt-row"><span>Spot price</span><span>${fmt(spot)}</span></div>`;
-      if (includeVAT)
-        html += `<div class="tt-row"><span>VAT 21%</span><span>${sign(vatAmt)}${fmt(vatAmt)}</span></div>`;
-      if (includeDistribution)
-        html += `<div class="tt-row"><span>Distribution (${low ? 'NT' : 'VT'})</span><span>+${fmt(dist)}</span></div>`;
-      html += `<div class="tt-divider"></div>`;
-      html += `<div class="tt-row tt-total"><span>Total</span><span>${fmt(effectivePrice)}/MWh</span></div>`;
-      html += `<div class="tt-row tt-meta"><span>${entry.level} · rank ${entry.levelNum96}/96</span></div>`;
-      return html;
+    function buildBarTooltipHTML(entry, effectivePrice) {
+      const h   = String(entry.hour).padStart(2, '0');
+      const m   = String(entry.minute).padStart(2, '0');
+      const cur = getCurrencyLabel();
+      const price = isEUR
+        ? (effectivePrice / EUR_TO_CZK).toFixed(2) + ' ' + cur
+        : Math.round(effectivePrice) + ' ' + cur;
+      return `<div class="tt-time">${h}:${m}</div>`
+           + `<div class="tt-row tt-total"><span>${price}/MWh</span></div>`;
     }
 
     function positionTooltip(x, y) {
@@ -623,10 +770,10 @@ body {
       tt.style.top  = top  + 'px';
     }
 
-    function showTooltip(e, entry, effectivePrice) {
+    function showBarTooltip(e, entry, effectivePrice) {
       if (tooltipPinned) return;
       const tt = document.getElementById('tooltip');
-      tt.innerHTML = buildTooltipHTML(entry, effectivePrice);
+      tt.innerHTML = buildBarTooltipHTML(entry, effectivePrice);
       tt.classList.add('visible');
       tt.classList.remove('pinned');
       positionTooltip(e.clientX, e.clientY);
@@ -643,14 +790,14 @@ body {
       document.getElementById('tooltip').classList.remove('visible');
     }
 
-    function togglePinnedTooltip(e, entry, effectivePrice) {
+    function togglePinnedBarTooltip(e, entry, effectivePrice) {
       const tt = document.getElementById('tooltip');
       if (tooltipPinned) {
         tooltipPinned = false;
         tt.classList.remove('visible', 'pinned');
       } else {
         tooltipPinned = true;
-        tt.innerHTML = buildTooltipHTML(entry, effectivePrice);
+        tt.innerHTML = buildBarTooltipHTML(entry, effectivePrice);
         tt.classList.add('visible', 'pinned');
         positionTooltip(e.clientX, e.clientY);
       }
@@ -665,43 +812,9 @@ body {
 
     document.addEventListener('click', dismissPinnedTooltip);
 
-    // ── Bar-chart simple tooltip (time + effective price only) ──
-    function buildBarTooltipHTML(entry, effectivePrice) {
-      const h   = String(entry.hour).padStart(2, '0');
-      const m   = String(entry.minute).padStart(2, '0');
-      const cur = getCurrencyLabel();
-      const price = isEUR
-        ? (effectivePrice / EUR_TO_CZK).toFixed(2) + ' ' + cur
-        : Math.round(effectivePrice) + ' ' + cur;
-      return `<div class="tt-time">${h}:${m}</div>`
-           + `<div class="tt-row tt-total"><span>${price}/MWh</span></div>`;
-    }
-
-    function showBarTooltip(e, entry, effectivePrice) {
-      if (tooltipPinned) return;
-      const tt = document.getElementById('tooltip');
-      tt.innerHTML = buildBarTooltipHTML(entry, effectivePrice);
-      tt.classList.add('visible');
-      tt.classList.remove('pinned');
-      positionTooltip(e.clientX, e.clientY);
-    }
-
-    function togglePinnedBarTooltip(e, entry, effectivePrice) {
-      const tt = document.getElementById('tooltip');
-      if (tooltipPinned) {
-        tooltipPinned = false;
-        tt.classList.remove('visible', 'pinned');
-      } else {
-        tooltipPinned = true;
-        tt.innerHTML = buildBarTooltipHTML(entry, effectivePrice);
-        tt.classList.add('visible', 'pinned');
-        positionTooltip(e.clientX, e.clientY);
-      }
-    }
-
-    // Fetch current price
+    // ── Fetches ───────────────────────────────────────────────
     fetch('https://spotovaelektrina.cz/api/v1/price/get-actual-price-czk')
-      .then(response => response.text())
+      .then(r => r.text())
       .then(price => {
         currentPriceRaw = parseFloat(price);
         updateCurrentPrice();
@@ -711,24 +824,22 @@ body {
         document.getElementById('currentPrice').textContent = '—';
       });
 
-    // Fetch price data from API and render
     fetch('https://spotovaelektrina.cz/api/v1/price/get-prices-json-qh')
-      .then(response => response.json())
+      .then(r => r.json())
       .then(data => {
-        todayData = data.hoursToday;
+        todayData    = data.hoursToday;
         tomorrowData = (data.hoursTomorrow && data.hoursTomorrow.length > 0) ? data.hoursTomorrow : null;
         renderChart('todayChart', 'todayYAxis', todayData, true);
         renderTomorrowChart();
         updateCards(todayData, tomorrowData);
         calculateCost();
       })
-      .catch(err => {
-        console.error('Failed to fetch data:', err);
-      });
+      .catch(err => console.error('Failed to fetch data:', err));
 
-    // Listen to consumption input changes
     document.getElementById('dailyConsumption').addEventListener('input', calculateCost);
 
+    // ── Render orchestration ──────────────────────────────────
+    // Full refresh: currency changed, or language changed
     function reRenderAll() {
       dismissPinnedTooltip();
       updateCurrentPrice();
@@ -740,11 +851,19 @@ body {
       renderTomorrowChart();
     }
 
+    // Chart-only refresh: VAT/distribution/low-tariff toggled
+    // Cards always show NET spot price so they don't need re-running here
+    function reRenderCharts() {
+      dismissPinnedTooltip();
+      if (todayData) renderChart('todayChart', 'todayYAxis', todayData, true);
+      renderTomorrowChart();
+    }
+
     function renderTomorrowChart() {
-      const chart   = document.getElementById('tomorrowChart');
-      const noData  = document.getElementById('tomorrowNoData');
-      const timeAx  = document.getElementById('tomorrowTimeAxis');
-      const yAxis   = document.getElementById('tomorrowYAxis');
+      const chart  = document.getElementById('tomorrowChart');
+      const noData = document.getElementById('tomorrowNoData');
+      const timeAx = document.getElementById('tomorrowTimeAxis');
+      const yAxis  = document.getElementById('tomorrowYAxis');
 
       if (!tomorrowData || tomorrowData.length === 0) {
         chart.style.display  = 'none';
@@ -760,6 +879,19 @@ body {
       renderChart('tomorrowChart', 'tomorrowYAxis', tomorrowData, false);
     }
 
+    // ── Toggle handlers ───────────────────────────────────────
+    function toggleDarkMode() {
+      isDark = !isDark;
+      document.getElementById('darkModeToggle').classList.toggle('active', isDark);
+      document.body.classList.toggle('light', !isDark);
+    }
+
+    function toggleLanguage() {
+      isEN = !isEN;
+      document.getElementById('czEnToggle').classList.toggle('active', isEN);
+      applyLanguage();
+    }
+
     function toggleCurrency() {
       isEUR = !isEUR;
       document.getElementById('currencyToggle').classList.toggle('active', isEUR);
@@ -769,12 +901,62 @@ body {
     function toggleVAT() {
       includeVAT = !includeVAT;
       document.getElementById('vatToggle').classList.toggle('active', includeVAT);
-      reRenderAll();
+      reRenderCharts();
     }
 
-    function applyVAT(price) {
-      return includeVAT ? price * 1.21 : price;
+    function toggleDistribution() {
+      includeDistribution = !includeDistribution;
+      document.getElementById('distributionToggle').classList.toggle('active', includeDistribution);
+      reRenderCharts();
     }
+
+    function toggleLowTariffBands() {
+      showLowTariffBands = !showLowTariffBands;
+      document.getElementById('lowTariffToggle').classList.toggle('active', showLowTariffBands);
+      reRenderCharts();
+    }
+
+    // ── Language ──────────────────────────────────────────────
+    function applyLanguage() {
+      const t = getLang();
+      document.querySelector('h1').textContent                    = t.title;
+      document.getElementById('headerSubtitle').innerHTML         = t.subtitle;
+      document.getElementById('darkLightLabel').textContent       = t.darkLight;
+      document.getElementById('czEnLabel').textContent            = t.czEn;
+      document.getElementById('currencyLabel').textContent        = t.currency;
+      document.getElementById('lbl-currentPrice').textContent     = t.lCurrentPrice;
+      document.getElementById('lbl-cheapest').textContent         = t.lCheapest;
+      document.getElementById('lbl-expensive').textContent        = t.lExpensive;
+      document.getElementById('lbl-consumption').textContent      = t.lConsumption;
+      document.getElementById('lbl-estCost').textContent          = t.lEstCost;
+      document.getElementById('lbl-priceRange').textContent       = t.lPriceRange;
+      document.getElementById('lbl-lowSlots').textContent         = t.lLowSlots;
+      document.getElementById('lbl-tomorrowComp').textContent     = t.lTomorrow;
+      document.getElementById('lbl-ofSlots').textContent          = t.ofSlots;
+      document.getElementById('lbl-noDataYet').textContent        = t.noDataYet;
+      document.getElementById('todayHeader').textContent          = t.today;
+      document.getElementById('tomorrowHeader').textContent       = t.tomorrow;
+      document.getElementById('vatLabel').textContent             = t.addVAT;
+      document.getElementById('distributionLabel').textContent    = t.distribution;
+      document.getElementById('lowTariffLabel').textContent       = t.showLowTariff;
+      document.getElementById('tomorrowNoData').textContent       = t.tomorrowNA;
+      // Refresh dynamic currency-labelled fields
+      updateCurrentPrice();
+      if (todayData) {
+        updateCards(todayData, tomorrowData);
+        calculateCost();
+      }
+    }
+
+    // ── Price helpers ─────────────────────────────────────────
+    function formatPrice(czk) {
+      if (isEUR) return (czk / EUR_TO_CZK).toFixed(2);
+      return Math.round(czk);
+    }
+
+    function getCurrencyLabel() { return isEUR ? 'EUR' : 'CZK'; }
+
+    function applyVAT(price) { return includeVAT ? price * 1.21 : price; }
 
     function getDistCost(low) {
       if (!includeDistribution) return 0;
@@ -782,39 +964,68 @@ body {
       return includeVAT ? DIST_HIGH_VAT : DIST_HIGH_NOVAT;
     }
 
-    // Returns effective price in CZK with VAT + distribution applied
+    // Effective price for chart bars (VAT + distribution if toggled on)
     function getEntryEffectivePriceCZK(entry) {
       return applyVAT(entry.priceCZK) + getDistCost(isLowTariff(entry.hour, entry.minute));
     }
 
-    // Format an already-effective CZK price (VAT/dist already included)
-    function formatEffectivePrice(czk) {
-      if (isEUR) return (czk / EUR_TO_CZK).toFixed(2);
-      return Math.round(czk);
+    // ── Card updates (NET spot price — no VAT/distribution) ───
+    function updateCurrentPrice() {
+      const t = getLang();
+      if (currentPriceRaw === null) return;
+      document.getElementById('currentPrice').textContent = formatPrice(currentPriceRaw);
+      document.getElementById('currentPriceCurrency').textContent = getCurrencyLabel() + t.perMWh;
     }
 
-    function getCurrencyLabel() {
-      return isEUR ? 'EUR' : 'CZK';
-    }
-
-    function toggleDistribution() {
-      includeDistribution = !includeDistribution;
-      document.getElementById('distributionToggle').classList.toggle('active', includeDistribution);
-      reRenderAll();
-    }
-
-    function toggleLowTariffBands() {
-      showLowTariffBands = !showLowTariffBands;
-      document.getElementById('lowTariffToggle').classList.toggle('active', showLowTariffBands);
-      if (todayData) {
-        renderChart('todayChart', 'todayYAxis', todayData, true);
+    function calculateCost() {
+      const t = getLang();
+      if (!todayData || todayData.length === 0) return;
+      const dailyConsumption = parseFloat(document.getElementById('dailyConsumption').value) || 0;
+      if (dailyConsumption === 0) {
+        document.getElementById('estimatedCost').textContent = '—';
+        return;
       }
-      renderTomorrowChart();
+      const consumptionPerSlot = dailyConsumption / 96;
+      let totalCost = 0;
+      todayData.forEach(entry => {
+        totalCost += consumptionPerSlot * (entry.priceCZK / 1000);
+      });
+      if (isEUR) totalCost = totalCost / EUR_TO_CZK;
+      document.getElementById('estimatedCost').textContent = totalCost.toFixed(2);
+      document.getElementById('estimatedCostCurrency').textContent = getCurrencyLabel() + t.perDay;
     }
 
+    function updateCards(todayData, tomorrowData) {
+      const t = getLang();
+      if (!todayData || todayData.length === 0) return;
+
+      let cheapest = todayData[0];
+      todayData.forEach(e => { if (e.priceCZK < cheapest.priceCZK) cheapest = e; });
+      document.getElementById('cheapestTime').textContent =
+        `${String(cheapest.hour).padStart(2,'0')}:${String(cheapest.minute).padStart(2,'0')}`;
+      document.getElementById('cheapestPrice').textContent =
+        `${formatPrice(cheapest.priceCZK)} ${getCurrencyLabel()}`;
+
+      let expensive = todayData[0];
+      todayData.forEach(e => { if (e.priceCZK > expensive.priceCZK) expensive = e; });
+      document.getElementById('expensiveTime').textContent =
+        `${String(expensive.hour).padStart(2,'0')}:${String(expensive.minute).padStart(2,'0')}`;
+      document.getElementById('expensivePrice').textContent =
+        `${formatPrice(expensive.priceCZK)} ${getCurrencyLabel()}`;
+
+      const rawPrices = todayData.map(e => e.priceCZK);
+      document.getElementById('priceRange').textContent =
+        `${formatPrice(Math.min(...rawPrices))} - ${formatPrice(Math.max(...rawPrices))}`;
+      document.getElementById('priceRangeCurrency').textContent = getCurrencyLabel();
+
+      const lowCount = todayData.filter(e => e.level === 'low').length;
+      document.getElementById('lowSlotsCount').textContent = lowCount;
+      document.getElementById('lbl-ofSlots').textContent = t.ofSlots;
+    }
+
+    // ── Chart rendering ───────────────────────────────────────
     function addLowTariffBands(container) {
       if (!showLowTariffBands) return;
-      // [slotStart, slotEnd] out of 96 quarter-hour slots
       const ranges = [[0,32],[36,48],[52,60],[64,76],[80,96]];
       ranges.forEach(([start, end]) => {
         const band = document.createElement('div');
@@ -825,87 +1036,35 @@ body {
       });
     }
 
-    function updateCurrentPrice() {
-      if (currentPriceRaw === null) return;
-      const now = new Date();
-      const low = isLowTariff(now.getHours(), now.getMinutes());
-      const effective = applyVAT(currentPriceRaw) + getDistCost(low);
-      document.getElementById('currentPrice').textContent = formatEffectivePrice(effective);
-      document.getElementById('currentPriceCurrency').textContent = `${getCurrencyLabel()}/MWh`;
-    }
-
-    function calculateCost() {
-      if (!todayData || todayData.length === 0) return;
-
-      const dailyConsumption = parseFloat(document.getElementById('dailyConsumption').value) || 0;
-
-      if (dailyConsumption === 0) {
-        document.getElementById('estimatedCost').textContent = '—';
-        return;
-      }
-
-      // Linear distribution: divide daily consumption evenly across 96 slots
-      const consumptionPerSlot = dailyConsumption / 96; // kWh per 15-min slot
-
-      // Calculate total cost (effective price includes VAT + distribution if enabled)
-      let totalCost = 0;
-      todayData.forEach(entry => {
-        const pricePerKwh = getEntryEffectivePriceCZK(entry) / 1000;
-        const slotCost = consumptionPerSlot * pricePerKwh;
-        totalCost += slotCost;
-      });
-
-      // Convert to EUR if needed
-      if (isEUR) {
-        totalCost = totalCost / EUR_TO_CZK;
-      }
-
-      // Display with 2 decimal places
-      document.getElementById('estimatedCost').textContent = totalCost.toFixed(2);
-      document.getElementById('estimatedCostCurrency').textContent = `${getCurrencyLabel()}/day`;
-    }
-
     function addCurrentTimeLine(container) {
       const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-
-      // Calculate position: which of the 96 slots are we in?
-      const minutesIntoDay = currentHour * 60 + currentMinute;
-      const slotIndex = Math.floor(minutesIntoDay / 15); // 15-min slots
-      const positionPercent = (slotIndex / 96) * 100;
-
+      const minutesIntoDay = now.getHours() * 60 + now.getMinutes();
+      const slotIndex = Math.floor(minutesIntoDay / 15);
       const line = document.createElement('div');
       line.className = 'current-time-line';
-      line.style.left = `${positionPercent}%`;
+      line.style.left = `${(slotIndex / 96) * 100}%`;
       container.appendChild(line);
     }
 
     function renderChart(containerId, yAxisId, dataArray, showCurrentTime = false) {
       const container = document.getElementById(containerId);
-      const yAxis = document.getElementById(yAxisId);
-
-      // Clear existing content
+      const yAxis     = document.getElementById(yAxisId);
       container.innerHTML = '';
       yAxis.innerHTML = '';
-
       if (!dataArray || dataArray.length === 0) return;
 
-      // Effective prices (VAT + distribution included)
-      const prices = dataArray.map(d => getEntryEffectivePriceCZK(d));
+      // Bars use effective price (NET + optional VAT + optional distribution)
+      const prices   = dataArray.map(d => getEntryEffectivePriceCZK(d));
       const maxPrice = Math.max(...prices);
       const minPrice = Math.min(...prices);
-      const range = maxPrice - minPrice || 1; // guard against flat data
-
-      // Zero line: % from bottom of chart (0% = minPrice, 100% = maxPrice)
+      const range    = maxPrice - minPrice || 1;
       const zeroPercent = Math.max(0, Math.min(100, (0 - minPrice) / range * 100));
 
-      // Y-axis labels: top (maxPrice) → bottom (minPrice) in 5 steps
-      const steps = 5;
-      for (let i = 0; i < steps; i++) {
-        const value = maxPrice - (i * range / (steps - 1));
+      // Y-axis: 5 labels top → bottom
+      for (let i = 0; i < 5; i++) {
+        const value = maxPrice - (i * range / 4);
         const label = document.createElement('div');
-        label.textContent = formatEffectivePrice(value);
+        label.textContent = formatPrice(value);
         yAxis.appendChild(label);
       }
 
@@ -915,20 +1074,17 @@ body {
       zeroLine.style.bottom = `${zeroPercent}%`;
       container.appendChild(zeroLine);
 
-      // Low tariff bands behind bars
       addLowTariffBands(container);
 
-      // Bars — absolutely positioned
       const barWidthPct = 100 / dataArray.length;
       const isTouch = window.matchMedia('(pointer: coarse)').matches;
+
       dataArray.forEach((entry, i) => {
         const bar = document.createElement('div');
         bar.className = `bar ${entry.level}`;
         const effectivePrice = getEntryEffectivePriceCZK(entry);
-
-        // Bottom of bar anchors at zero (for positive) or at price level (for negative)
-        const barBottomPct = (Math.min(0, effectivePrice) - minPrice) / range * 100;
-        const barHeightPct = Math.max(Math.abs(effectivePrice) / range * 100, 0.4); // min 0.4% visible
+        const barBottomPct   = (Math.min(0, effectivePrice) - minPrice) / range * 100;
+        const barHeightPct   = Math.max(Math.abs(effectivePrice) / range * 100, 0.4);
 
         bar.style.left         = `${i * barWidthPct}%`;
         bar.style.width        = `calc(${barWidthPct}% - 1px)`;
@@ -948,52 +1104,7 @@ body {
         container.appendChild(bar);
       });
 
-      // Current time line (today only)
-      if (showCurrentTime) {
-        addCurrentTimeLine(container);
-      }
-    }
-
-    function updateCards(todayData, tomorrowData) {
-      if (!todayData || todayData.length === 0) return;
-
-      // Find cheapest (by effective price)
-      let cheapest = todayData[0];
-      todayData.forEach(entry => {
-        if (getEntryEffectivePriceCZK(entry) < getEntryEffectivePriceCZK(cheapest)) {
-          cheapest = entry;
-        }
-      });
-
-      document.getElementById('cheapestTime').textContent =
-        `${String(cheapest.hour).padStart(2,'0')}:${String(cheapest.minute).padStart(2,'0')}`;
-      document.getElementById('cheapestPrice').textContent =
-        `${formatEffectivePrice(getEntryEffectivePriceCZK(cheapest))} ${getCurrencyLabel()}`;
-
-      // Find most expensive (by effective price)
-      let expensive = todayData[0];
-      todayData.forEach(entry => {
-        if (getEntryEffectivePriceCZK(entry) > getEntryEffectivePriceCZK(expensive)) {
-          expensive = entry;
-        }
-      });
-
-      document.getElementById('expensiveTime').textContent =
-        `${String(expensive.hour).padStart(2,'0')}:${String(expensive.minute).padStart(2,'0')}`;
-      document.getElementById('expensivePrice').textContent =
-        `${formatEffectivePrice(getEntryEffectivePriceCZK(expensive))} ${getCurrencyLabel()}`;
-
-      // Calculate price range
-      const effectivePrices = todayData.map(e => getEntryEffectivePriceCZK(e));
-      const minPrice = Math.min(...effectivePrices);
-      const maxPrice = Math.max(...effectivePrices);
-      document.getElementById('priceRange').textContent =
-        `${formatEffectivePrice(minPrice)} - ${formatEffectivePrice(maxPrice)}`;
-      document.getElementById('priceRangeCurrency').textContent = getCurrencyLabel();
-
-      // Count low price slots
-      const lowCount = todayData.filter(e => e.level === 'low').length;
-      document.getElementById('lowSlotsCount').textContent = lowCount;
+      if (showCurrentTime) addCurrentTimeLine(container);
     }
   </script>
 </body>
