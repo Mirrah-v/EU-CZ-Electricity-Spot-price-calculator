@@ -1053,16 +1053,22 @@ body.light .no-data-message {
       yAxis.innerHTML = '';
       if (!dataArray || dataArray.length === 0) return;
 
-      // Bars use effective price (NET + optional VAT + optional distribution)
-      const prices   = dataArray.map(d => getEntryEffectivePriceCZK(d));
-      const maxPrice = Math.max(...prices);
-      const minPrice = Math.min(...prices);
-      const range    = maxPrice - minPrice || 1;
-      const zeroPercent = Math.max(0, Math.min(100, (0 - minPrice) / range * 100));
+      // Axis scale is always VAT-inclusive (+ distribution if toggled).
+      // This keeps Y-axis labels fixed when the VAT toggle is flipped —
+      // bars grow into the headroom rather than the axis re-scaling.
+      const axisPrices = dataArray.map(d => {
+        const low = isLowTariff(d.hour, d.minute);
+        const dist = includeDistribution ? (low ? DIST_LOW_VAT : DIST_HIGH_VAT) : 0;
+        return d.priceCZK * 1.21 + dist;
+      });
+      const axisMax  = Math.max(...axisPrices);
+      const axisMin  = Math.min(...axisPrices);
+      const axisRange = axisMax - axisMin || 1;
+      const zeroPercent = Math.max(0, Math.min(100, (0 - axisMin) / axisRange * 100));
 
-      // Y-axis: 5 labels top → bottom
+      // Y-axis: 5 labels top → bottom (VAT-inclusive values, stable across toggle)
       for (let i = 0; i < 5; i++) {
-        const value = maxPrice - (i * range / 4);
+        const value = axisMax - (i * axisRange / 4);
         const label = document.createElement('div');
         label.textContent = formatPrice(value);
         yAxis.appendChild(label);
@@ -1082,9 +1088,11 @@ body.light .no-data-message {
       dataArray.forEach((entry, i) => {
         const bar = document.createElement('div');
         bar.className = `bar ${entry.level}`;
+        // Bar height uses actual current toggle state (may exclude VAT)
         const effectivePrice = getEntryEffectivePriceCZK(entry);
-        const barBottomPct   = (Math.min(0, effectivePrice) - minPrice) / range * 100;
-        const barHeightPct   = Math.max(Math.abs(effectivePrice) / range * 100, 0.4);
+        // Bar position is relative to the fixed VAT-inclusive axis range
+        const barBottomPct   = (Math.min(0, effectivePrice) - axisMin) / axisRange * 100;
+        const barHeightPct   = Math.max(Math.abs(effectivePrice) / axisRange * 100, 0.4);
 
         bar.style.left         = `${i * barWidthPct}%`;
         bar.style.width        = `calc(${barWidthPct}% - 1px)`;
