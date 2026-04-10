@@ -706,7 +706,7 @@ body.light .no-data-message {
   <div id="tooltip"></div>
 
   <script>
-    const EUR_TO_CZK = 24.50;
+    let EUR_TO_CZK = 24.50; // fallback; overwritten by live CNB rate
 
     // Distribution cost constants (CZK/MWh)
     const DIST_HIGH_VAT   = 913.27;
@@ -888,6 +888,28 @@ body.light .no-data-message {
       })
       .catch(err => console.error('Failed to fetch data:', err));
 
+    // ── Live EUR/CZK rate from CNB ────────────────────────────
+    // CNB XML is fetched via a CORS proxy; falls back to hardcoded 24.50.
+    const CNB_URL = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.xml';
+    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(CNB_URL)}`)
+      .then(r => r.text())
+      .then(xml => {
+        const match = xml.match(/kod="EUR"[^>]*kurz="([^"]+)"/);
+        if (match) {
+          const rate = parseFloat(match[1].replace(',', '.'));
+          if (!isNaN(rate) && rate > 1) {
+            EUR_TO_CZK = rate;
+            // Append live rate to the currency toggle label
+            const rateStr = rate.toFixed(3);
+            document.getElementById('currencyLabel').textContent =
+              `CZK / EUR  (${rateStr})`;
+            // Re-render if data is already loaded
+            if (todayData) reRenderAll();
+          }
+        }
+      })
+      .catch(err => console.warn('CNB rate fetch failed, using fallback:', err));
+
     document.getElementById('dailyConsumption').addEventListener('input', calculateCost);
 
     // ── Render orchestration ──────────────────────────────────
@@ -975,7 +997,8 @@ body.light .no-data-message {
       document.getElementById('headerSubtitle').innerHTML         = t.subtitle;
       document.getElementById('darkLightLabel').textContent       = t.darkLight;
       document.getElementById('czEnLabel').textContent            = t.czEn;
-      document.getElementById('currencyLabel').textContent        = t.currency;
+      document.getElementById('currencyLabel').textContent        =
+        EUR_TO_CZK !== 24.50 ? `${t.currency}  (${EUR_TO_CZK.toFixed(3)})` : t.currency;
       document.getElementById('lbl-currentPrice').textContent     = t.lCurrentPrice;
       document.getElementById('lbl-cheapest').textContent         = t.lCheapest;
       document.getElementById('lbl-expensive').textContent        = t.lExpensive;
