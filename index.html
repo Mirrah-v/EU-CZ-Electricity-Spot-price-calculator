@@ -573,7 +573,7 @@ body.light .no-data-message {
         <div class="card-value" id="lowSlotsCount">—</div>
         <div class="card-secondary" id="lbl-ofSlots">of 96 slots</div>
       </div>
-      <div class="card">
+      <div class="card" id="tomorrowCard">
         <div class="card-label" id="lbl-tomorrowComp">🔮 Tomorrow vs Today</div>
         <div class="card-value" id="tomorrowComparison">—</div>
         <div class="card-secondary" id="lbl-noDataYet">No data yet</div>
@@ -684,6 +684,7 @@ body.light .no-data-message {
         lTomorrow:     '🔮 Tomorrow vs Today',
         ofSlots:       'of 96 slots',
         noDataYet:     'No data yet',
+        avgLine:       (t, tm) => `Ø Today: ${t} · Tomorrow: ${tm}`,
         today:         'Today',
         tomorrow:      'Tomorrow',
         addVAT:        'Add VAT',
@@ -709,6 +710,7 @@ body.light .no-data-message {
         lTomorrow:     '🔮 Zítra vs. Dnes',
         ofSlots:       'ze 96 úseků',
         noDataYet:     'Zatím bez dat',
+        avgLine:       (t, tm) => `Ø Dnes: ${t} · Zítra: ${tm}`,
         today:         'Dnes',
         tomorrow:      'Zítra',
         addVAT:        'Přidat DPH',
@@ -1021,6 +1023,36 @@ body.light .no-data-message {
       const lowCount = todayData.filter(e => e.level === 'low').length;
       document.getElementById('lowSlotsCount').textContent = lowCount;
       document.getElementById('lbl-ofSlots').textContent = t.ofSlots;
+
+      // Tomorrow vs Today — average NET spot price comparison
+      const card = document.getElementById('tomorrowCard');
+      const valEl = document.getElementById('tomorrowComparison');
+      const subEl = document.getElementById('lbl-noDataYet');
+      const cur = getCurrencyLabel();
+
+      const avg = arr => arr.reduce((s, e) => s + e.priceCZK, 0) / arr.length;
+
+      if (!tomorrowData || tomorrowData.length === 0) {
+        card.classList.remove('highlight-green', 'highlight-red');
+        valEl.textContent = '—';
+        subEl.textContent = t.noDataYet;
+      } else {
+        const todayAvgCZK    = avg(todayData);
+        const tomorrowAvgCZK = avg(tomorrowData);
+        const diffPct = ((tomorrowAvgCZK - todayAvgCZK) / Math.abs(todayAvgCZK)) * 100;
+        const cheaper = tomorrowAvgCZK < todayAvgCZK;
+
+        card.classList.toggle('highlight-green', cheaper);
+        card.classList.toggle('highlight-red', !cheaper);
+
+        const arrow = cheaper ? '▼' : '▲';
+        valEl.textContent = `${arrow} ${Math.abs(diffPct).toFixed(1)}%`;
+
+        const fmtAvg = czk => isEUR
+          ? `${(czk / EUR_TO_CZK).toFixed(2)} ${cur}`
+          : `${Math.round(czk)} ${cur}`;
+        subEl.textContent = t.avgLine(fmtAvg(todayAvgCZK), fmtAvg(tomorrowAvgCZK));
+      }
     }
 
     // ── Chart rendering ───────────────────────────────────────
