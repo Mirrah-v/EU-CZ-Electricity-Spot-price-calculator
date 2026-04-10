@@ -428,6 +428,52 @@ body.light #tooltip {
 .tt-row   { display: flex; justify-content: space-between; gap: 16px; opacity: 0.82; margin-bottom: 3px; font-size: 11px; }
 .tt-total { font-size: 13px; font-weight: 700; opacity: 1 !important; }
 
+/* Info icon tooltip */
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 9px;
+  font-style: normal;
+  opacity: 0.55;
+  cursor: default;
+  margin-left: 5px;
+  vertical-align: middle;
+  position: relative;
+  flex-shrink: 0;
+}
+.info-icon:hover { opacity: 1; }
+.info-icon::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(4, 16, 32, 0.97);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s;
+  z-index: 200;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+.info-icon:hover::after { opacity: 1; }
+body.light .info-icon::after {
+  background: rgba(255,255,255,0.97);
+  color: #1c1c1e;
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
 .no-data-message {
   height: 240px;
   background: rgba(0, 0, 0, 0.3);
@@ -576,7 +622,9 @@ body.light .no-data-message {
       <div class="card" id="tomorrowCard">
         <div class="card-label" id="lbl-tomorrowComp">🔮 Tomorrow vs Today</div>
         <div class="card-value" id="tomorrowComparison">—</div>
-        <div class="card-secondary" id="lbl-noDataYet">No data yet</div>
+        <div class="card-secondary" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
+          <span id="lbl-noDataYet">No data yet</span><i class="info-icon" id="avgInfoIcon" data-tip="NET spot price · excl. VAT &amp; distribution">i</i>
+        </div>
       </div>
     </div>
 
@@ -684,6 +732,7 @@ body.light .no-data-message {
         lTomorrow:     '🔮 Tomorrow vs Today',
         ofSlots:       'of 96 slots',
         noDataYet:     'No data yet',
+        avgTip:        'NET spot price · excl. VAT & distribution',
         avgLine:       (t, tm) => `Ø Today: ${t} · Tomorrow: ${tm}`,
         today:         'Today',
         tomorrow:      'Tomorrow',
@@ -710,6 +759,7 @@ body.light .no-data-message {
         lTomorrow:     '🔮 Zítra vs. Dnes',
         ofSlots:       'ze 96 úseků',
         noDataYet:     'Zatím bez dat',
+        avgTip:        'Čistá spotová cena · bez DPH a distribuce',
         avgLine:       (t, tm) => `Ø Dnes: ${t} · Zítra: ${tm}`,
         today:         'Dnes',
         tomorrow:      'Zítra',
@@ -936,6 +986,7 @@ body.light .no-data-message {
       document.getElementById('lbl-tomorrowComp').textContent     = t.lTomorrow;
       document.getElementById('lbl-ofSlots').textContent          = t.ofSlots;
       document.getElementById('lbl-noDataYet').textContent        = t.noDataYet;
+      document.getElementById('avgInfoIcon').dataset.tip          = t.avgTip;
       document.getElementById('todayHeader').textContent          = t.today;
       document.getElementById('tomorrowHeader').textContent       = t.tomorrow;
       document.getElementById('vatLabel').textContent             = t.addVAT;
