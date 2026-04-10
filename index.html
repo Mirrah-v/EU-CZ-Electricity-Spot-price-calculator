@@ -1061,8 +1061,11 @@ body.light .no-data-message {
         const dist = includeDistribution ? (low ? DIST_LOW_VAT : DIST_HIGH_VAT) : 0;
         return d.priceCZK * 1.21 + dist;
       });
-      const axisMax  = Math.max(...axisPrices);
-      const axisMin  = Math.min(...axisPrices);
+      const axisMax = Math.max(...axisPrices);
+      const axisDataMin = Math.min(...axisPrices);
+      // If all prices are positive, always anchor the bottom at 0.
+      // If any price is negative, use the actual minimum (bars can go below zero).
+      const axisMin = axisDataMin >= 0 ? 0 : axisDataMin;
       const axisRange = axisMax - axisMin || 1;
       const zeroPercent = Math.max(0, Math.min(100, (0 - axisMin) / axisRange * 100));
 
