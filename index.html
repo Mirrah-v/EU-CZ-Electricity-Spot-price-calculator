@@ -467,6 +467,10 @@ body.light #tooltip {
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
 .info-icon:hover::after { opacity: 1; }
+.info-icon-down::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
 body.light .info-icon::after {
   background: rgba(255,255,255,0.97);
   color: #1c1c1e;
@@ -570,7 +574,7 @@ body.light .no-data-message {
           </div>
         </div>
         <div class="toggle-container">
-          <span class="toggle-label" id="currencyLabel">CZK / EUR</span>
+          <span class="toggle-label" id="currencyLabel">CZK / EUR</span><i class="info-icon info-icon-down" id="rateInfoIcon" data-tip="Rate: 1 EUR = 24.500 CZK (fallback)">i</i>
           <div class="toggle-switch" id="currencyToggle" onclick="toggleCurrency()">
             <div class="toggle-slider"></div>
           </div>
@@ -733,6 +737,8 @@ body.light .no-data-message {
         ofSlots:       'of 96 slots',
         noDataYet:     'No data yet',
         avgTip:        'NET spot price · excl. VAT & distribution',
+        rateSrcLive:   'Live rate · CNB',
+        rateSrcFallback: 'Fallback rate · not live',
         avgLine:       (t, tm) => `Ø Today: ${t} · Tomorrow: ${tm}`,
         today:         'Today',
         tomorrow:      'Tomorrow',
@@ -760,6 +766,8 @@ body.light .no-data-message {
         ofSlots:       'ze 96 úseků',
         noDataYet:     'Zatím bez dat',
         avgTip:        'Čistá spotová cena · bez DPH a distribuce',
+        rateSrcLive:   'Živý kurz · ČNB',
+        rateSrcFallback: 'Záložní kurz · není živý',
         avgLine:       (t, tm) => `Ø Dnes: ${t} · Zítra: ${tm}`,
         today:         'Dnes',
         tomorrow:      'Zítra',
@@ -864,6 +872,17 @@ body.light .no-data-message {
 
     document.addEventListener('click', dismissPinnedTooltip);
 
+    // ── Rate tooltip helper ───────────────────────────────────
+    function updateRateTooltip() {
+      const t = getLang();
+      const isLive = EUR_TO_CZK !== 24.50;
+      const src = isLive ? t.rateSrcLive : t.rateSrcFallback;
+      document.getElementById('rateInfoIcon').dataset.tip =
+        `1 EUR = ${EUR_TO_CZK.toFixed(3)} CZK  |  ${src}`;
+    }
+
+    updateRateTooltip(); // set fallback text immediately on load
+
     // ── Fetches ───────────────────────────────────────────────
     fetch('https://spotovaelektrina.cz/api/v1/price/get-actual-price-czk')
       .then(r => r.text())
@@ -899,10 +918,10 @@ body.light .no-data-message {
           const rate = parseFloat(match[1].replace(',', '.'));
           if (!isNaN(rate) && rate > 1) {
             EUR_TO_CZK = rate;
-            // Append live rate to the currency toggle label
             const rateStr = rate.toFixed(3);
             document.getElementById('currencyLabel').textContent =
               `CZK / EUR  (${rateStr})`;
+            updateRateTooltip();
             // Re-render if data is already loaded
             if (todayData) reRenderAll();
           }
@@ -1010,6 +1029,7 @@ body.light .no-data-message {
       document.getElementById('lbl-ofSlots').textContent          = t.ofSlots;
       document.getElementById('lbl-noDataYet').textContent        = t.noDataYet;
       document.getElementById('avgInfoIcon').dataset.tip          = t.avgTip;
+      updateRateTooltip();
       document.getElementById('todayHeader').textContent          = t.today;
       document.getElementById('tomorrowHeader').textContent       = t.tomorrow;
       document.getElementById('vatLabel').textContent             = t.addVAT;
