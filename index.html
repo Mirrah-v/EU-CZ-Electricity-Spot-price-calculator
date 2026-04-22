@@ -627,7 +627,7 @@ body.light .no-data-message {
         <div class="card-label" id="lbl-tomorrowComp">🔮 Tomorrow vs Today</div>
         <div class="card-value" id="tomorrowComparison">—</div>
         <div class="card-secondary" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
-          <span id="lbl-noDataYet">No data yet</span><i class="info-icon" id="avgInfoIcon" data-tip="NET spot price · excl. VAT &amp; distribution">i</i>
+          <span id="lbl-noDataYet">No data yet</span>
         </div>
       </div>
     </div>
@@ -736,7 +736,6 @@ body.light .no-data-message {
         lTomorrow:     '🔮 Tomorrow vs Today',
         ofSlots:       'of 96 slots',
         noDataYet:     'No data yet',
-        avgTip:        'NET spot price · excl. VAT & distribution',
         rateSrcLive:   'Live rate · CNB',
         rateSrcFallback: 'Fallback rate · not live',
         avgLine:       (t, tm) => `Ø Today: ${t} · Tomorrow: ${tm}`,
@@ -765,7 +764,6 @@ body.light .no-data-message {
         lTomorrow:     '🔮 Zítra vs. Dnes',
         ofSlots:       'ze 96 úseků',
         noDataYet:     'Zatím bez dat',
-        avgTip:        'Čistá spotová cena · bez DPH a distribuce',
         rateSrcLive:   'Živý kurz · ČNB',
         rateSrcFallback: 'Záložní kurz · není živý',
         avgLine:       (t, tm) => `Ø Dnes: ${t} · Zítra: ${tm}`,
@@ -908,26 +906,41 @@ body.light .no-data-message {
       .catch(err => console.error('Failed to fetch data:', err));
 
     // ── Live EUR/CZK rate from CNB ────────────────────────────
-    // CNB XML is fetched via a CORS proxy; falls back to hardcoded 24.50.
+    // Tries direct fetch first (CNB has open CORS), then two proxy fallbacks.
     const CNB_URL = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.xml';
-    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(CNB_URL)}`)
-      .then(r => r.text())
-      .then(xml => {
-        const match = xml.match(/kod="EUR"[^>]*kurz="([^"]+)"/);
-        if (match) {
-          const rate = parseFloat(match[1].replace(',', '.'));
-          if (!isNaN(rate) && rate > 1) {
-            EUR_TO_CZK = rate;
-            const rateStr = rate.toFixed(3);
-            document.getElementById('currencyLabel').textContent =
-              `CZK / EUR  (${rateStr})`;
-            updateRateTooltip();
-            // Re-render if data is already loaded
-            if (todayData) reRenderAll();
-          }
-        }
-      })
-      .catch(err => console.warn('CNB rate fetch failed, using fallback:', err));
+    const CNB_PROXIES = [
+      CNB_URL,
+      `https://corsproxy.io/?${encodeURIComponent(CNB_URL)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(CNB_URL)}`,
+    ];
+
+    function applyLiveRate(rate) {
+      EUR_TO_CZK = rate;
+      document.getElementById('currencyLabel').textContent =
+        `CZK / EUR  (${rate.toFixed(3)})`;
+      updateRateTooltip();
+      if (todayData) reRenderAll();
+    }
+
+    function parseEurRate(xml) {
+      const match = xml.match(/kod="EUR"[^>]*kurz="([^"]+)"/);
+      if (!match) return null;
+      const rate = parseFloat(match[1].replace(',', '.'));
+      return (!isNaN(rate) && rate > 1) ? rate : null;
+    }
+
+    (async function fetchCNBRate() {
+      for (const url of CNB_PROXIES) {
+        try {
+          const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+          if (!r.ok) continue;
+          const xml = await r.text();
+          const rate = parseEurRate(xml);
+          if (rate) { applyLiveRate(rate); return; }
+        } catch { /* try next */ }
+      }
+      console.warn('CNB rate: all sources failed, using fallback 24.50');
+    })();
 
     document.getElementById('dailyConsumption').addEventListener('input', calculateCost);
 
@@ -1028,7 +1041,6 @@ body.light .no-data-message {
       document.getElementById('lbl-tomorrowComp').textContent     = t.lTomorrow;
       document.getElementById('lbl-ofSlots').textContent          = t.ofSlots;
       document.getElementById('lbl-noDataYet').textContent        = t.noDataYet;
-      document.getElementById('avgInfoIcon').dataset.tip          = t.avgTip;
       updateRateTooltip();
       document.getElementById('todayHeader').textContent          = t.today;
       document.getElementById('tomorrowHeader').textContent       = t.tomorrow;
