@@ -648,7 +648,7 @@ body.light .no-data-message {
       </div>
       <div class="card card-input">
         <div class="card-label" id="lbl-spotFee">⚡ Distributor Spot Fee</div>
-        <input type="number" id="spotFeeInput" placeholder="0" value="" min="0" step="1">
+        <input type="number" id="spotFeeInput" placeholder="0" value="250" min="0" step="1">
         <div class="card-secondary" id="spotFeeCurrency" style="margin-top: 6px;">CZK/MWh · excl. VAT</div>
       </div>
     </div>
@@ -822,7 +822,7 @@ body.light .no-data-message {
     let isEUR               = false;
     let includeVAT          = false;
     let includeDistribution = false;
-    let spotFeeCZK = 0; // always stored in CZK/MWh; input display converts per currency
+    let spotFeeCZK = 250; // always stored in CZK/MWh; input display converts per currency
     let showLowTariffBands  = false;
     let tooltipPinned       = false;
     let isDark              = true;  // dark mode is default
@@ -1236,15 +1236,18 @@ body.light .no-data-message {
       yAxis.innerHTML = '';
       if (!dataArray || dataArray.length === 0) return;
 
-      // Axis scale is always VAT-inclusive (+ distribution if toggled).
-      // This keeps Y-axis labels fixed when the VAT toggle is flipped —
-      // bars grow into the headroom rather than the axis re-scaling.
+      // Axis scale is always fully VAT-inclusive (spot + fee + distribution).
+      // This means bars (which use the current toggle state) always fit within
+      // the scale — VAT-off bars sit shorter, VAT-on bars fill the headroom.
+      // An extra buffer is added above the tallest bar so there's always visual
+      // breathing room; the buffer grows if the spot fee exceeds 300 CZK.
+      const AXIS_BUFFER_CZK = Math.max(300, spotFeeCZK); // CZK, pre-VAT
       const axisPrices = dataArray.map(d => {
         const low = isLowTariff(d.hour, d.minute);
         const dist = includeDistribution ? (low ? DIST_LOW_VAT : DIST_HIGH_VAT) : 0;
-        return d.priceCZK * 1.21 + dist;
+        return (d.priceCZK + spotFeeCZK) * 1.21 + dist;
       });
-      const axisMax = Math.max(...axisPrices);
+      const axisMax = Math.max(...axisPrices) + AXIS_BUFFER_CZK * 1.21;
       const axisDataMin = Math.min(...axisPrices);
       // If all prices are positive, always anchor the bottom at 0.
       // If any price is negative, use the actual minimum (bars can go below zero).
