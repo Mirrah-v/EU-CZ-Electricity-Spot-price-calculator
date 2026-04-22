@@ -574,10 +574,10 @@ body.light .no-data-message {
           </div>
         </div>
         <div class="toggle-container">
-          <span class="toggle-label" id="currencyLabel">CZK / EUR</span><i class="info-icon info-icon-down" id="rateInfoIcon" data-tip="Rate: 1 EUR = 24.500 CZK (fallback)">i</i>
+          <span class="toggle-label" id="currencyLabel">CZK / EUR</span>
           <div class="toggle-switch" id="currencyToggle" onclick="toggleCurrency()">
             <div class="toggle-slider"></div>
-          </div>
+          </div><i class="info-icon info-icon-down" id="rateInfoIcon" data-tip="Rate: 1 EUR = 24.500 CZK (fallback)">i</i>
         </div>
       </div>
     </div>
@@ -916,8 +916,6 @@ body.light .no-data-message {
 
     function applyLiveRate(rate) {
       EUR_TO_CZK = rate;
-      document.getElementById('currencyLabel').textContent =
-        `CZK / EUR  (${rate.toFixed(3)})`;
       updateRateTooltip();
       if (todayData) reRenderAll();
     }
@@ -1029,8 +1027,7 @@ body.light .no-data-message {
       document.getElementById('headerSubtitle').innerHTML         = t.subtitle;
       document.getElementById('darkLightLabel').textContent       = t.darkLight;
       document.getElementById('czEnLabel').textContent            = t.czEn;
-      document.getElementById('currencyLabel').textContent        =
-        EUR_TO_CZK !== 24.50 ? `${t.currency}  (${EUR_TO_CZK.toFixed(3)})` : t.currency;
+      document.getElementById('currencyLabel').textContent        = t.currency;
       document.getElementById('lbl-currentPrice').textContent     = t.lCurrentPrice;
       document.getElementById('lbl-cheapest').textContent         = t.lCheapest;
       document.getElementById('lbl-expensive').textContent        = t.lExpensive;
