@@ -604,6 +604,32 @@ body.light .no-data-message {
     text-align: center;
   }
 }
+
+/* Mobile portrait — compact cards to reduce stacking height */
+@media (max-width: 640px) and (orientation: portrait) {
+  .card {
+    padding: 10px 14px;
+  }
+  .card-label {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+  .card-value {
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+  .card-secondary {
+    font-size: 13px;
+  }
+  .card-input input {
+    font-size: 16px;
+    padding: 6px 10px;
+  }
+  .cards-grid, .cards-grid-3 {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+}
 </style>
 </head>
 <body>
