@@ -548,22 +548,49 @@ body.light .no-data-message {
   color: #1c1c1e;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-  .cards-grid { grid-template-columns: repeat(3, 1fr); }
+/* Unified card grid — default (mobile landscape / large mobile) */
+.cards-all {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-@media (max-width: 1200px) {
-  .cards-grid-3 { grid-template-columns: repeat(2, 1fr); }
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .cards-all { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 1024px) {
-  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+/* Desktop — 20-col grid: top 5 cards span 4 each, bottom 4 cards span 5 each */
+@media (min-width: 1025px) {
+  .cards-all {
+    grid-template-columns: repeat(20, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  #card-cp { grid-column: 1  / span 4; grid-row: 1; }
+  #card-ch { grid-column: 5  / span 4; grid-row: 1; }
+  #card-me { grid-column: 9  / span 4; grid-row: 1; }
+  #card-dc { grid-column: 13 / span 4; grid-row: 1; }
+  #card-ec { grid-column: 17 / span 4; grid-row: 1; }
+  #card-pr { grid-column: 1  / span 5; grid-row: 2; }
+  #card-ls { grid-column: 6  / span 5; grid-row: 2; }
+  #tomorrowCard { grid-column: 11 / span 5; grid-row: 2; }
+  #card-sf { grid-column: 16 / span 5; grid-row: 2; }
+}
+
+/* Mobile portrait — 2-column pairs; last 3 cards full width */
+@media (max-width: 640px) and (orientation: portrait) {
+  .cards-all {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  #card-ls, #tomorrowCard, #card-sf { grid-column: span 2; }
 }
 
 @media (max-width: 640px) {
   body { padding: 12px; }
-  .cards-grid, .cards-grid-3 { grid-template-columns: 1fr; }
   .header {
     flex-direction: column;
     align-items: flex-start;
@@ -625,10 +652,6 @@ body.light .no-data-message {
     font-size: 16px;
     padding: 6px 10px;
   }
-  .cards-grid, .cards-grid-3 {
-    gap: 10px;
-    margin-bottom: 10px;
-  }
 }
 </style>
 </head>
@@ -662,43 +685,43 @@ body.light .no-data-message {
       </div>
     </div>
 
-    <!-- Callout Cards - Top Row -->
-    <div class="cards-grid">
-      <div class="card card-sm">
+    <!-- Callout Cards — unified grid; HTML order matches mobile portrait pairs -->
+    <div class="cards-all">
+      <!-- Pair 1: Current Price | Price Range -->
+      <div class="card card-sm" id="card-cp">
         <div class="card-label" id="lbl-currentPrice">⚡ Current Price</div>
         <div class="card-value" id="currentPrice">—</div>
         <div class="card-secondary" id="currentPriceCurrency">CZK/MWh</div>
       </div>
-      <div class="card card-sm highlight-green">
-        <div class="card-label" id="lbl-cheapest">💚 Cheapest Hour</div>
-        <div class="card-value" id="cheapestTime">—</div>
-        <div class="card-secondary" id="cheapestPrice">—</div>
-      </div>
-      <div class="card card-sm highlight-red">
-        <div class="card-label" id="lbl-expensive">💰 Most Expensive</div>
-        <div class="card-value" id="expensiveTime">—</div>
-        <div class="card-secondary" id="expensivePrice">—</div>
-      </div>
-      <div class="card card-sm card-input">
-        <div class="card-label" id="lbl-consumption">📊 Daily Consumption</div>
-        <input type="number" id="dailyConsumption" placeholder="50" value="50" min="0" step="1">
-        <div class="card-secondary" style="margin-top: 6px;">kWh</div>
-      </div>
-      <div class="card card-sm highlight-orange">
-        <div class="card-label" id="lbl-estCost">💵 Estimated Cost</div>
-        <div class="card-value" id="estimatedCost">—</div>
-        <div class="card-secondary" id="estimatedCostCurrency">CZK/day</div>
-      </div>
-    </div>
-
-    <!-- Callout Cards - Bottom Row -->
-    <div class="cards-grid-3">
-      <div class="card card-sm">
+      <div class="card card-sm" id="card-pr">
         <div class="card-label" id="lbl-priceRange">📈 Price Range</div>
         <div class="card-value" id="priceRange">—</div>
         <div class="card-secondary" id="priceRangeCurrency">CZK</div>
       </div>
-      <div class="card card-sm highlight-green">
+      <!-- Pair 2: Cheapest Hour | Most Expensive -->
+      <div class="card card-sm highlight-green" id="card-ch">
+        <div class="card-label" id="lbl-cheapest">💚 Cheapest Hour</div>
+        <div class="card-value" id="cheapestTime">—</div>
+        <div class="card-secondary" id="cheapestPrice">—</div>
+      </div>
+      <div class="card card-sm highlight-red" id="card-me">
+        <div class="card-label" id="lbl-expensive">💰 Most Expensive</div>
+        <div class="card-value" id="expensiveTime">—</div>
+        <div class="card-secondary" id="expensivePrice">—</div>
+      </div>
+      <!-- Pair 3: Daily Consumption | Estimated Cost -->
+      <div class="card card-sm card-input" id="card-dc">
+        <div class="card-label" id="lbl-consumption">📊 Daily Consumption</div>
+        <input type="number" id="dailyConsumption" placeholder="50" value="50" min="0" step="1">
+        <div class="card-secondary" style="margin-top: 6px;">kWh</div>
+      </div>
+      <div class="card card-sm highlight-orange" id="card-ec">
+        <div class="card-label" id="lbl-estCost">💵 Estimated Cost</div>
+        <div class="card-value" id="estimatedCost">—</div>
+        <div class="card-secondary" id="estimatedCostCurrency">CZK/day</div>
+      </div>
+      <!-- Full-width on mobile portrait -->
+      <div class="card card-sm highlight-green" id="card-ls">
         <div class="card-label" id="lbl-lowSlots">✅ Low Price Slots</div>
         <div class="card-value" id="lowSlotsCount">—</div>
         <div class="card-secondary" id="lbl-ofSlots">of 96 slots</div>
@@ -710,7 +733,7 @@ body.light .no-data-message {
           <span id="lbl-noDataYet">No data yet</span>
         </div>
       </div>
-      <div class="card card-sm card-input">
+      <div class="card card-sm card-input" id="card-sf">
         <div class="card-label" id="lbl-spotFee">⚡ Distributor Spot Fee</div>
         <input type="number" id="spotFeeInput" placeholder="0" value="250" min="0" step="1">
         <div class="card-secondary" id="spotFeeCurrency" style="margin-top: 6px;">CZK/MWh · excl. VAT</div>
