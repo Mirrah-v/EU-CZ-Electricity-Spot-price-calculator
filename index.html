@@ -78,6 +78,21 @@ body.light .subtitle-accent {
   align-items: center;
 }
 
+/* Header toggle-containers: label above, switch below */
+.header-controls .toggle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Keeps label + ⓘ on one line regardless of flex direction */
+.toggle-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* Toggle Switch */
 .toggle-container {
   display: flex;
@@ -516,13 +531,11 @@ body.light .no-data-message {
   .header h1 { font-size: 18px; }
   .header-controls {
     flex-direction: row;
-    gap: 12px;
+    gap: 8px;
     width: 100%;
     justify-content: space-evenly;
   }
   .header-controls .toggle-container {
-    flex-direction: column;
-    align-items: center;
     gap: 4px;
   }
   .header-controls .toggle-label {
@@ -574,10 +587,10 @@ body.light .no-data-message {
           </div>
         </div>
         <div class="toggle-container">
-          <span class="toggle-label" id="currencyLabel">CZK / EUR</span>
+          <span class="toggle-label-row"><span class="toggle-label" id="currencyLabel">CZK / EUR</span><i class="info-icon info-icon-down" id="rateInfoIcon" data-tip="Rate: 1 EUR = 24.500 CZK (fallback)">i</i></span>
           <div class="toggle-switch" id="currencyToggle" onclick="toggleCurrency()">
             <div class="toggle-slider"></div>
-          </div><i class="info-icon info-icon-down" id="rateInfoIcon" data-tip="Rate: 1 EUR = 24.500 CZK (fallback)">i</i>
+          </div>
         </div>
       </div>
     </div>
