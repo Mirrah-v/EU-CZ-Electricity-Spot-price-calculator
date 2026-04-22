@@ -235,17 +235,24 @@ body.light .card-secondary {
   opacity: 0.65;
 }
 
+/* Tighter base card on desktop */
+@media (min-width: 641px) {
+  .card {
+    padding: 14px 18px;
+  }
+}
+
 /* Compact card variant — desktop only (rows 2 & 3) */
 @media (min-width: 641px) {
   .card-sm {
-    padding: 12px 16px;
+    padding: 10px 14px;
   }
   .card-sm .card-label {
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
   .card-sm .card-value {
     font-size: 20px;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   .card-sm .card-secondary {
     font-size: 13px;
