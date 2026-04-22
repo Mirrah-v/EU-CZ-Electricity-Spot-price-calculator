@@ -582,10 +582,12 @@ body.light .no-data-message {
 /* Mobile portrait — 2-column pairs; last 3 cards full width */
 @media (max-width: 640px) and (orientation: portrait) {
   .cards-all {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-bottom: 10px;
   }
+  /* Cards must not expand beyond their grid column */
+  .cards-all .card { min-width: 0; overflow: hidden; }
   #card-ls, #tomorrowCard, #card-sf { grid-column: span 2; }
 }
 
