@@ -225,6 +225,27 @@ body.light .card-secondary {
   opacity: 0.65;
 }
 
+/* Compact card variant — desktop only (rows 2 & 3) */
+@media (min-width: 641px) {
+  .card-sm {
+    padding: 12px 16px;
+  }
+  .card-sm .card-label {
+    margin-bottom: 4px;
+  }
+  .card-sm .card-value {
+    font-size: 20px;
+    margin-bottom: 3px;
+  }
+  .card-sm .card-secondary {
+    font-size: 13px;
+  }
+  .card-sm input {
+    font-size: 16px;
+    padding: 6px 10px;
+  }
+}
+
 .card.highlight-green .card-value { color: #4caf50; }
 .card.highlight-red   .card-value { color: #f44336; }
 .card.highlight-orange .card-value { color: #ffa726; }
@@ -600,27 +621,27 @@ body.light .no-data-message {
 
     <!-- Callout Cards - Top Row -->
     <div class="cards-grid">
-      <div class="card">
+      <div class="card card-sm">
         <div class="card-label" id="lbl-currentPrice">⚡ Current Price</div>
         <div class="card-value" id="currentPrice">—</div>
         <div class="card-secondary" id="currentPriceCurrency">CZK/MWh</div>
       </div>
-      <div class="card highlight-green">
+      <div class="card card-sm highlight-green">
         <div class="card-label" id="lbl-cheapest">💚 Cheapest Hour</div>
         <div class="card-value" id="cheapestTime">—</div>
         <div class="card-secondary" id="cheapestPrice">—</div>
       </div>
-      <div class="card highlight-red">
+      <div class="card card-sm highlight-red">
         <div class="card-label" id="lbl-expensive">💰 Most Expensive</div>
         <div class="card-value" id="expensiveTime">—</div>
         <div class="card-secondary" id="expensivePrice">—</div>
       </div>
-      <div class="card card-input">
+      <div class="card card-sm card-input">
         <div class="card-label" id="lbl-consumption">📊 Daily Consumption</div>
         <input type="number" id="dailyConsumption" placeholder="50" value="50" min="0" step="1">
         <div class="card-secondary" style="margin-top: 6px;">kWh</div>
       </div>
-      <div class="card highlight-orange">
+      <div class="card card-sm highlight-orange">
         <div class="card-label" id="lbl-estCost">💵 Estimated Cost</div>
         <div class="card-value" id="estimatedCost">—</div>
         <div class="card-secondary" id="estimatedCostCurrency">CZK/day</div>
@@ -629,24 +650,24 @@ body.light .no-data-message {
 
     <!-- Callout Cards - Bottom Row -->
     <div class="cards-grid-3">
-      <div class="card">
+      <div class="card card-sm">
         <div class="card-label" id="lbl-priceRange">📈 Price Range</div>
         <div class="card-value" id="priceRange">—</div>
         <div class="card-secondary" id="priceRangeCurrency">CZK</div>
       </div>
-      <div class="card highlight-green">
+      <div class="card card-sm highlight-green">
         <div class="card-label" id="lbl-lowSlots">✅ Low Price Slots</div>
         <div class="card-value" id="lowSlotsCount">—</div>
         <div class="card-secondary" id="lbl-ofSlots">of 96 slots</div>
       </div>
-      <div class="card" id="tomorrowCard">
+      <div class="card card-sm" id="tomorrowCard">
         <div class="card-label" id="lbl-tomorrowComp">🔮 Tomorrow vs Today</div>
         <div class="card-value" id="tomorrowComparison">—</div>
         <div class="card-secondary" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
           <span id="lbl-noDataYet">No data yet</span>
         </div>
       </div>
-      <div class="card card-input">
+      <div class="card card-sm card-input">
         <div class="card-label" id="lbl-spotFee">⚡ Distributor Spot Fee</div>
         <input type="number" id="spotFeeInput" placeholder="0" value="250" min="0" step="1">
         <div class="card-secondary" id="spotFeeCurrency" style="margin-top: 6px;">CZK/MWh · excl. VAT</div>
