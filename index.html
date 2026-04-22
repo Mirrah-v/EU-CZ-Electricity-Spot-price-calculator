@@ -169,7 +169,7 @@ body.light .toggle-slider {
 
 .cards-grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -515,9 +515,12 @@ body.light .no-data-message {
   .cards-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-@media (max-width: 1024px) {
-  .cards-grid   { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1200px) {
   .cards-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {
@@ -643,6 +646,11 @@ body.light .no-data-message {
           <span id="lbl-noDataYet">No data yet</span>
         </div>
       </div>
+      <div class="card card-input">
+        <div class="card-label" id="lbl-spotFee">⚡ Distributor Spot Fee</div>
+        <input type="number" id="spotFeeInput" placeholder="0" value="" min="0" step="1">
+        <div class="card-secondary" id="spotFeeCurrency" style="margin-top: 6px;">CZK/MWh · excl. VAT</div>
+      </div>
     </div>
 
     <!-- Chart: Today -->
@@ -747,6 +755,8 @@ body.light .no-data-message {
         lPriceRange:   '📈 Price Range',
         lLowSlots:     '✅ Low Price Slots',
         lTomorrow:     '🔮 Tomorrow vs Today',
+        lSpotFee:      '⚡ Distributor Spot Fee',
+        spotFeeUnit:   (cur) => `${cur}/MWh · excl. VAT`,
         ofSlots:       'of 96 slots',
         noDataYet:     'No data yet',
         rateSrcLive:   'Live rate · CNB',
@@ -775,6 +785,8 @@ body.light .no-data-message {
         lPriceRange:   '📈 Cenové rozpětí',
         lLowSlots:     '✅ Levné úseky',
         lTomorrow:     '🔮 Zítra vs. Dnes',
+        lSpotFee:      '⚡ Distribuční spotový poplatek',
+        spotFeeUnit:   (cur) => `${cur}/MWh · bez DPH`,
         ofSlots:       'ze 96 úseků',
         noDataYet:     'Zatím bez dat',
         rateSrcLive:   'Živý kurz · ČNB',
@@ -810,6 +822,7 @@ body.light .no-data-message {
     let isEUR               = false;
     let includeVAT          = false;
     let includeDistribution = false;
+    let spotFeeCZK = 0; // always stored in CZK/MWh; input display converts per currency
     let showLowTariffBands  = false;
     let tooltipPinned       = false;
     let isDark              = true;  // dark mode is default
@@ -884,6 +897,11 @@ body.light .no-data-message {
     document.addEventListener('click', dismissPinnedTooltip);
 
     // ── Rate tooltip helper ───────────────────────────────────
+    function updateSpotFeeUnit() {
+      const t = getLang();
+      document.getElementById('spotFeeCurrency').textContent = t.spotFeeUnit(getCurrencyLabel());
+    }
+
     function updateRateTooltip() {
       const t = getLang();
       const isLive = EUR_TO_CZK !== 24.50;
@@ -955,6 +973,13 @@ body.light .no-data-message {
 
     document.getElementById('dailyConsumption').addEventListener('input', calculateCost);
 
+    document.getElementById('spotFeeInput').addEventListener('input', () => {
+      const raw = parseFloat(document.getElementById('spotFeeInput').value) || 0;
+      spotFeeCZK = isEUR ? raw * EUR_TO_CZK : raw;
+      reRenderCharts();
+      calculateCost();
+    });
+
     // ── Render orchestration ──────────────────────────────────
     // Full refresh: currency changed, or language changed
     function reRenderAll() {
@@ -1012,6 +1037,14 @@ body.light .no-data-message {
     function toggleCurrency() {
       isEUR = !isEUR;
       document.getElementById('currencyToggle').classList.toggle('active', isEUR);
+      // Convert the displayed spot fee input to the new currency
+      const feeInput = document.getElementById('spotFeeInput');
+      if (spotFeeCZK !== 0) {
+        feeInput.value = isEUR
+          ? (spotFeeCZK / EUR_TO_CZK).toFixed(2)
+          : Math.round(spotFeeCZK);
+      }
+      updateSpotFeeUnit();
       reRenderAll();
     }
 
@@ -1049,6 +1082,8 @@ body.light .no-data-message {
       document.getElementById('lbl-priceRange').textContent       = t.lPriceRange;
       document.getElementById('lbl-lowSlots').textContent         = t.lLowSlots;
       document.getElementById('lbl-tomorrowComp').textContent     = t.lTomorrow;
+      document.getElementById('lbl-spotFee').textContent          = t.lSpotFee;
+      updateSpotFeeUnit();
       document.getElementById('lbl-ofSlots').textContent          = t.ofSlots;
       document.getElementById('lbl-noDataYet').textContent        = t.noDataYet;
       updateRateTooltip();
@@ -1082,9 +1117,9 @@ body.light .no-data-message {
       return includeVAT ? DIST_HIGH_VAT : DIST_HIGH_NOVAT;
     }
 
-    // Effective price for chart bars (VAT + distribution if toggled on)
+    // Effective price for chart bars (VAT + distribution + spot fee if set)
     function getEntryEffectivePriceCZK(entry) {
-      return applyVAT(entry.priceCZK) + getDistCost(isLowTariff(entry.hour, entry.minute));
+      return applyVAT(entry.priceCZK + spotFeeCZK) + getDistCost(isLowTariff(entry.hour, entry.minute));
     }
 
     // ── Card updates (NET spot price — no VAT/distribution) ───
@@ -1106,7 +1141,7 @@ body.light .no-data-message {
       const consumptionPerSlot = dailyConsumption / 96;
       let totalCost = 0;
       todayData.forEach(entry => {
-        totalCost += consumptionPerSlot * (entry.priceCZK / 1000);
+        totalCost += consumptionPerSlot * ((entry.priceCZK + spotFeeCZK) / 1000);
       });
       if (isEUR) totalCost = totalCost / EUR_TO_CZK;
       document.getElementById('estimatedCost').textContent = totalCost.toFixed(2);
