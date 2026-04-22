@@ -995,7 +995,9 @@ body.light .no-data-message {
     document.getElementById('dailyConsumption').addEventListener('input', calculateCost);
 
     document.getElementById('spotFeeInput').addEventListener('input', () => {
-      const raw = parseFloat(document.getElementById('spotFeeInput').value) || 0;
+      const input = document.getElementById('spotFeeInput');
+      let raw = parseFloat(input.value) || 0;
+      if (raw < 0) { raw = 0; input.value = 0; }
       spotFeeCZK = isEUR ? raw * EUR_TO_CZK : raw;
       reRenderCharts();
       calculateCost();
