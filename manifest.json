@@ -1,0 +1,26 @@
+{
+  "name": "CZ Electricity Spot Prices",
+  "short_name": "Spot Elektřina",
+  "description": "Real-time Czech SPOT electricity prices — ČEZ Distribuce D57d",
+  "start_url": "/EU-CZ-Electricity-Spot-price-calculator/",
+  "scope": "/EU-CZ-Electricity-Spot-price-calculator/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#06162B",
+  "theme_color": "#06162B",
+  "lang": "cs",
+  "icons": [
+    {
+      "src": "icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
