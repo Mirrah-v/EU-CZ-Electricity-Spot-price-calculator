@@ -674,16 +674,33 @@ body.light .no-data-message {
   .header h1 { font-size: 18px; }
   .header-controls {
     flex-direction: row;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
-    justify-content: space-evenly;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2px;
   }
   .header-controls .toggle-container {
-    gap: 4px;
+    gap: 3px;
+    flex-shrink: 0;
   }
   .header-controls .toggle-label {
-    font-size: 10px;
+    font-size: 9px;
     text-align: center;
+  }
+  .header-controls .mode-segment {
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .header-controls .mode-segment-label {
+    font-size: 9px;
+  }
+  .header-controls .mode-segment-pills {
+    padding: 2px;
+  }
+  .header-controls .mode-btn {
+    padding: 4px 9px;
+    font-size: 11px;
   }
   .chart-section { padding: 16px; }
   .chart-y-axis  { min-width: 24px; padding-right: 4px; }
