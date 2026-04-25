@@ -674,53 +674,58 @@ body.light .no-data-message {
   .header h1 { font-size: 18px; }
   .header-controls {
     flex-direction: row;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
     justify-content: space-between;
     align-items: center;
     padding: 0 2px;
   }
-  .header-controls .toggle-container {
-    gap: 3px;
-    flex-shrink: 0;
-  }
-  .header-controls .toggle-label {
-    font-size: 9px;
-    text-align: center;
-  }
+  /* Each control takes equal share — language changes don't shift layout */
+  .header-controls .toggle-container,
   .header-controls .mode-segment {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    align-items: center;
     gap: 3px;
-    flex-shrink: 0;
   }
+  .header-controls .toggle-label,
   .header-controls .mode-segment-label {
     font-size: 9px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .header-controls .mode-segment-pills {
     padding: 2px;
   }
+  /* Fixed-width pill buttons so NÁKUP/PRODEJ ≠ BUY/SELL don't resize pill */
   .header-controls .mode-btn {
-    padding: 4px 9px;
+    padding: 4px 0;
     font-size: 11px;
+    width: 44px;
+    text-align: center;
   }
   .chart-section { padding: 16px; }
   .chart-y-axis  { min-width: 24px; padding-right: 4px; }
   .chart-wrapper { gap: 4px; }
-  /* Chart controls: title full width, toggles wrap below */
-  .chart-controls { gap: 10px; }
-  .chart-header   { width: 100%; }
-  .chart-controls-toggles {
-    gap: 10px;
-    width: 100%;
+  /* Chart controls: title left, toggle right — single row */
+  .chart-controls {
+    gap: 8px;
+    flex-wrap: nowrap;
+    align-items: center;
   }
   .chart-controls-toggles .toggle-container {
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    flex: 1;
+    gap: 3px;
   }
   .chart-controls-toggles .toggle-label {
-    font-size: 10px;
+    font-size: 9px;
     text-align: center;
+    white-space: nowrap;
   }
 }
 
