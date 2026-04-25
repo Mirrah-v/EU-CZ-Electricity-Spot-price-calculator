@@ -830,18 +830,6 @@ body.light .no-data-message {
         <div class="chart-header" id="todayHeader">Today</div>
         <div class="chart-controls-toggles">
           <div class="toggle-container">
-            <span class="toggle-label" id="vatLabel">Add VAT</span>
-            <div class="toggle-switch" id="vatToggle" onclick="toggleVAT()">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
-          <div class="toggle-container" id="distributionToggleContainer">
-            <span class="toggle-label" id="distributionLabel">Distribution</span>
-            <div class="toggle-switch" id="distributionToggle" onclick="toggleDistribution()">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
-          <div class="toggle-container">
             <span class="toggle-label" id="lowTariffLabel">Low Tariff Slots</span>
             <div class="toggle-switch" id="lowTariffToggle" onclick="toggleLowTariffBands()">
               <div class="toggle-slider"></div>
@@ -939,8 +927,6 @@ body.light .no-data-message {
         avgLine:       (t, tm) => `Ø Today: ${t} · Tomorrow: ${tm}`,
         today:         'Today',
         tomorrow:      'Tomorrow',
-        addVAT:        'Add VAT',
-        distribution:  'Distribution',
         showLowTariff: 'Low Tariff Slots',
         tomorrowNA:    "Tomorrow's prices not yet available",
         perMWh:        '/MWh',
@@ -973,8 +959,6 @@ body.light .no-data-message {
         avgLine:       (t, tm) => `Ø Dnes: ${t} · Zítra: ${tm}`,
         today:         'Dnes',
         tomorrow:      'Zítra',
-        addVAT:        'Přidat DPH',
-        distribution:  'Distribuce',
         showLowTariff: 'Pásma NT',
         tomorrowNA:    'Zítřejší ceny zatím nejsou k dispozici',
         perMWh:        '/MWh',
@@ -999,8 +983,6 @@ body.light .no-data-message {
     let tomorrowData        = null;
     let currentPriceRaw     = null;
     let isEUR               = false;
-    let includeVAT          = false;
-    let includeDistribution = false;
     let spotFeeCZK = 250; // always stored in CZK/MWh; input display converts per currency
     let showLowTariffBands  = false;
     let tooltipPinned       = false;
@@ -1230,18 +1212,6 @@ body.light .no-data-message {
       reRenderAll();
     }
 
-    function toggleVAT() {
-      includeVAT = !includeVAT;
-      document.getElementById('vatToggle').classList.toggle('active', includeVAT);
-      reRenderCharts();
-    }
-
-    function toggleDistribution() {
-      includeDistribution = !includeDistribution;
-      document.getElementById('distributionToggle').classList.toggle('active', includeDistribution);
-      reRenderCharts();
-    }
-
     function toggleLowTariffBands() {
       showLowTariffBands = !showLowTariffBands;
       document.getElementById('lowTariffToggle').classList.toggle('active', showLowTariffBands);
@@ -1255,7 +1225,6 @@ body.light .no-data-message {
       const btnBuy  = document.getElementById('btnBuy');
       const btnSell = document.getElementById('btnSell');
       const pillBg  = document.getElementById('modePillBg');
-      const distContainer = document.getElementById('distributionToggleContainer');
 
       btnBuy.classList.toggle('active', !isSellMode);
       btnSell.classList.toggle('active', isSellMode);
@@ -1266,11 +1235,7 @@ body.light .no-data-message {
       pillBg.style.width = activeBtn.offsetWidth + 'px';
       pillBg.className   = `mode-pill-bg ${mode}`;
 
-      // Distribution toggle is irrelevant in SELL mode
-      distContainer.classList.toggle('disabled', isSellMode);
-
-      reRenderCharts();
-      calculateCost();
+      reRenderAll();
     }
 
     // Position pill on load (after layout)
@@ -1309,8 +1274,6 @@ body.light .no-data-message {
       updateRateTooltip();
       document.getElementById('todayHeader').textContent          = t.today;
       document.getElementById('tomorrowHeader').textContent       = t.tomorrow;
-      document.getElementById('vatLabel').textContent             = t.addVAT;
-      document.getElementById('distributionLabel').textContent    = t.distribution;
       document.getElementById('lowTariffLabel').textContent       = t.showLowTariff;
       document.getElementById('tomorrowNoData').textContent       = t.tomorrowNA;
       // Refresh dynamic currency-labelled fields
@@ -1329,12 +1292,13 @@ body.light .no-data-message {
 
     function getCurrencyLabel() { return isEUR ? 'EUR' : 'CZK'; }
 
-    function applyVAT(price) { return includeVAT ? price * 1.21 : price; }
+    // VAT always applies — baked into BUY/SELL formulas
+    function applyVAT(price) { return price * 1.21; }
 
+    // Distribution only applies when buying; SELL mode = no distribution
     function getDistCost(low) {
-      if (!includeDistribution) return 0;
-      if (low) return includeVAT ? DIST_LOW_VAT : DIST_LOW_NOVAT;
-      return includeVAT ? DIST_HIGH_VAT : DIST_HIGH_NOVAT;
+      if (isSellMode) return 0;
+      return low ? DIST_LOW_VAT : DIST_HIGH_VAT;
     }
 
     // Effective price for chart bars — formula depends on BUY/SELL mode
@@ -1351,7 +1315,12 @@ body.light .no-data-message {
     function updateCurrentPrice() {
       const t = getLang();
       if (currentPriceRaw === null) return;
-      document.getElementById('currentPrice').textContent = formatPrice(currentPriceRaw);
+      const now = new Date();
+      const low = isLowTariff(now.getHours(), now.getMinutes());
+      const dist = isSellMode ? 0 : (low ? DIST_LOW_VAT : DIST_HIGH_VAT);
+      const fee  = isSellMode ? -spotFeeCZK : spotFeeCZK;
+      const effective = (currentPriceRaw + fee) * 1.21 + dist;
+      document.getElementById('currentPrice').textContent = formatPrice(effective);
       document.getElementById('currentPriceCurrency').textContent = getCurrencyLabel() + t.perMWh;
     }
 
@@ -1366,10 +1335,7 @@ body.light .no-data-message {
       const consumptionPerSlot = dailyConsumption / 96;
       let totalCost = 0;
       todayData.forEach(entry => {
-        const slotPrice = isSellMode
-          ? entry.priceCZK - spotFeeCZK
-          : entry.priceCZK + spotFeeCZK;
-        totalCost += consumptionPerSlot * (slotPrice / 1000);
+        totalCost += consumptionPerSlot * (getEntryEffectivePriceCZK(entry) / 1000);
       });
       if (isEUR) totalCost = totalCost / EUR_TO_CZK;
       document.getElementById('estimatedCost').textContent = totalCost.toFixed(2);
@@ -1383,22 +1349,22 @@ body.light .no-data-message {
       if (!todayData || todayData.length === 0) return;
 
       let cheapest = todayData[0];
-      todayData.forEach(e => { if (e.priceCZK < cheapest.priceCZK) cheapest = e; });
+      todayData.forEach(e => { if (getEntryEffectivePriceCZK(e) < getEntryEffectivePriceCZK(cheapest)) cheapest = e; });
       document.getElementById('cheapestTime').textContent =
         `${String(cheapest.hour).padStart(2,'0')}:${String(cheapest.minute).padStart(2,'0')}`;
       document.getElementById('cheapestPrice').textContent =
-        `${formatPrice(cheapest.priceCZK)} ${getCurrencyLabel()}`;
+        `${formatPrice(getEntryEffectivePriceCZK(cheapest))} ${getCurrencyLabel()}`;
 
       let expensive = todayData[0];
-      todayData.forEach(e => { if (e.priceCZK > expensive.priceCZK) expensive = e; });
+      todayData.forEach(e => { if (getEntryEffectivePriceCZK(e) > getEntryEffectivePriceCZK(expensive)) expensive = e; });
       document.getElementById('expensiveTime').textContent =
         `${String(expensive.hour).padStart(2,'0')}:${String(expensive.minute).padStart(2,'0')}`;
       document.getElementById('expensivePrice').textContent =
-        `${formatPrice(expensive.priceCZK)} ${getCurrencyLabel()}`;
+        `${formatPrice(getEntryEffectivePriceCZK(expensive))} ${getCurrencyLabel()}`;
 
-      const rawPrices = todayData.map(e => e.priceCZK);
+      const effPrices = todayData.map(e => getEntryEffectivePriceCZK(e));
       document.getElementById('priceRange').textContent =
-        `${formatPrice(Math.min(...rawPrices))} - ${formatPrice(Math.max(...rawPrices))}`;
+        `${formatPrice(Math.min(...effPrices))} - ${formatPrice(Math.max(...effPrices))}`;
       document.getElementById('priceRangeCurrency').textContent = getCurrencyLabel();
 
       const lowCount = todayData.filter(e => e.level === 'low').length;
@@ -1411,7 +1377,7 @@ body.light .no-data-message {
       const subEl = document.getElementById('lbl-noDataYet');
       const cur = getCurrencyLabel();
 
-      const avg = arr => arr.reduce((s, e) => s + e.priceCZK, 0) / arr.length;
+      const avg = arr => arr.reduce((s, e) => s + getEntryEffectivePriceCZK(e), 0) / arr.length;
 
       if (!tomorrowData || tomorrowData.length === 0) {
         card.classList.remove('highlight-green', 'highlight-red');
@@ -1474,12 +1440,9 @@ body.light .no-data-message {
       const AXIS_BUFFER_CZK = Math.max(300, spotFeeCZK); // CZK, pre-VAT
       // Axis scale uses fully VAT-inclusive worst-case prices for the current mode
       const axisPrices = dataArray.map(d => {
-        if (isSellMode) {
-          return (d.priceCZK - spotFeeCZK) * 1.21;
-        }
+        if (isSellMode) return (d.priceCZK - spotFeeCZK) * 1.21;
         const low = isLowTariff(d.hour, d.minute);
-        const dist = includeDistribution ? (low ? DIST_LOW_VAT : DIST_HIGH_VAT) : 0;
-        return (d.priceCZK + spotFeeCZK) * 1.21 + dist;
+        return (d.priceCZK + spotFeeCZK) * 1.21 + (low ? DIST_LOW_VAT : DIST_HIGH_VAT);
       });
       const axisMax = Math.max(...axisPrices) + AXIS_BUFFER_CZK * 1.21;
       const axisDataMin = Math.min(...axisPrices);
