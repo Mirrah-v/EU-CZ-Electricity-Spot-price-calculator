@@ -795,7 +795,9 @@ body.light .no-data-message {
       </div>
       <!-- Pair 3: Daily Consumption | Estimated Cost -->
       <div class="card card-sm card-input" id="card-dc">
-        <div class="card-label" id="lbl-consumption">📊 Daily Consumption</div>
+        <div class="card-label" style="display:flex;align-items:center;gap:4px;">
+          <span id="lbl-consumption">📊 Daily Consumption</span><i class="info-icon" id="consumptionInfoIcon" data-tip="kWh spread evenly across 96 slots — a benchmark average, not an exact bill.">i</i>
+        </div>
         <input type="number" id="dailyConsumption" placeholder="50" value="50" min="0" step="1">
         <div class="card-secondary" style="margin-top: 6px;">kWh</div>
       </div>
@@ -910,6 +912,9 @@ body.light .no-data-message {
         lCheapest:     '💚 Cheapest Hour',
         lExpensive:    '💰 Most Expensive',
         lConsumption:  '📊 Daily Consumption',
+        lProduction:   '📊 Daily Production',
+        consumptionTip:'kWh spread evenly across 96 slots — a benchmark average, not an exact bill.',
+        productionTip: 'kWh spread evenly across 96 slots — a benchmark average, not exact revenue.',
         lEstCost:      '💵 Estimated Cost',
         estRevenue:    '💵 Est. Revenue',
         modeLabel:     'Mode',
@@ -942,6 +947,9 @@ body.light .no-data-message {
         lCheapest:     '💚 Nejlevnější hodina',
         lExpensive:    '💰 Nejdražší hodina',
         lConsumption:  '📊 Denní spotřeba',
+        lProduction:   '📊 Denní výroba',
+        consumptionTip:'kWh rovnoměrně rozloženo do 96 úseků — průměrný odhad, ne přesný účet.',
+        productionTip: 'kWh rovnoměrně rozloženo do 96 úseků — průměrný odhad, ne přesný výnos.',
         lEstCost:      '💵 Odhadované náklady',
         estRevenue:    '💵 Odhad. výnos',
         modeLabel:     'Režim',
@@ -1059,6 +1067,14 @@ body.light .no-data-message {
     document.addEventListener('click', dismissPinnedTooltip);
 
     // ── Rate tooltip helper ───────────────────────────────────
+    function updateConsumptionLabel() {
+      const t = getLang();
+      const label = isSellMode ? t.lProduction   : t.lConsumption;
+      const tip   = isSellMode ? t.productionTip : t.consumptionTip;
+      document.getElementById('lbl-consumption').textContent        = label;
+      document.getElementById('consumptionInfoIcon').dataset.tip    = tip;
+    }
+
     function updateSpotFeeUnit() {
       const t = getLang();
       document.getElementById('spotFeeCurrency').textContent = t.spotFeeUnit(getCurrencyLabel());
@@ -1235,6 +1251,7 @@ body.light .no-data-message {
       pillBg.style.width = activeBtn.offsetWidth + 'px';
       pillBg.className   = `mode-pill-bg ${mode}`;
 
+      updateConsumptionLabel();
       reRenderAll();
     }
 
@@ -1262,7 +1279,7 @@ body.light .no-data-message {
       document.getElementById('lbl-currentPrice').textContent     = t.lCurrentPrice;
       document.getElementById('lbl-cheapest').textContent         = t.lCheapest;
       document.getElementById('lbl-expensive').textContent        = t.lExpensive;
-      document.getElementById('lbl-consumption').textContent      = t.lConsumption;
+      updateConsumptionLabel();
       document.getElementById('lbl-estCost').textContent          = isSellMode ? t.estRevenue : t.lEstCost;
       document.getElementById('lbl-priceRange').textContent       = t.lPriceRange;
       document.getElementById('lbl-lowSlots').textContent         = t.lLowSlots;
