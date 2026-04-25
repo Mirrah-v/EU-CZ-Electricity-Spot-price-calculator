@@ -674,18 +674,21 @@ body.light .no-data-message {
   .header h1 { font-size: 18px; }
   .header-controls {
     flex-direction: row;
-    gap: 4px;
+    gap: 0;
     width: 100%;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: center;
-    padding: 0 2px;
+    padding: 0;
   }
-  /* Each control takes equal share — language changes don't shift layout */
-  .header-controls .toggle-container,
+  /* Pill takes natural width; 3 toggles each get an equal share of the rest */
   .header-controls .mode-segment {
+    flex-shrink: 0;
+    align-items: center;
+    gap: 3px;
+  }
+  .header-controls .toggle-container {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
     align-items: center;
     gap: 3px;
   }
@@ -701,11 +704,11 @@ body.light .no-data-message {
   .header-controls .mode-segment-pills {
     padding: 2px;
   }
-  /* Fixed-width pill buttons so NÁKUP/PRODEJ ≠ BUY/SELL don't resize pill */
+  /* Fixed-width pill buttons so NÁKUP/PRODEJ ≠ BUY/SELL don't resize the pill */
   .header-controls .mode-btn {
     padding: 4px 0;
     font-size: 11px;
-    width: 44px;
+    width: 46px;
     text-align: center;
   }
   .chart-section { padding: 16px; }
