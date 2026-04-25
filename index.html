@@ -103,6 +103,79 @@ body.light .subtitle-accent {
   gap: 4px;
 }
 
+/* ── BUY / SELL segmented control ───────────────────────── */
+.mode-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mode-segment-label {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+body.light .mode-segment-label { color: #1c1c1e; opacity: 0.85; }
+
+.mode-segment-pills {
+  display: flex;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 3px;
+  gap: 2px;
+  backdrop-filter: blur(12px);
+  position: relative;
+}
+
+body.light .mode-segment-pills {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.13);
+}
+
+.mode-btn {
+  position: relative;
+  padding: 5px 16px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.25s;
+  z-index: 1;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+body.light .mode-btn { color: #1c1c1e; }
+
+.mode-btn.active { color: white; }
+body.light .mode-btn.active { color: white; }
+
+/* Sliding pill background */
+.mode-pill-bg {
+  position: absolute;
+  top: 3px;
+  height: calc(100% - 6px);
+  border-radius: 16px;
+  transition: left 0.28s cubic-bezier(.4,0,.2,1), width 0.28s cubic-bezier(.4,0,.2,1), background 0.28s;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.mode-pill-bg.buy  { background: rgba(33, 150, 243, 0.75); }
+.mode-pill-bg.sell { background: rgba(76, 175, 80, 0.75); }
+
+/* Distribution toggle disabled in SELL mode */
+.toggle-container.disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
 /* Toggle Switch */
 .toggle-container {
   display: flex;
@@ -666,6 +739,15 @@ body.light .no-data-message {
         <div id="headerSubtitle" class="header-subtitle">Custom report for <strong class="subtitle-accent">ČEZ Distribuce</strong> area · Tariff <strong class="subtitle-accent">D57d</strong> · Distribution costs per ČEZ 2026 regulated rates</div>
       </div>
       <div class="header-controls">
+        <!-- BUY / SELL segmented control -->
+        <div class="mode-segment">
+          <span class="mode-segment-label" id="modeSwitchLabel">Mode</span>
+          <div class="mode-segment-pills" id="modeSegment">
+            <div class="mode-pill-bg buy" id="modePillBg"></div>
+            <button class="mode-btn active" id="btnBuy"  onclick="setMode('buy')">BUY</button>
+            <button class="mode-btn"        id="btnSell" onclick="setMode('sell')">SELL</button>
+          </div>
+        </div>
         <div class="toggle-container">
           <span class="toggle-label" id="darkLightLabel">Dark / Light</span>
           <div class="toggle-switch active" id="darkModeToggle" onclick="toggleDarkMode()">
@@ -753,7 +835,7 @@ body.light .no-data-message {
               <div class="toggle-slider"></div>
             </div>
           </div>
-          <div class="toggle-container">
+          <div class="toggle-container" id="distributionToggleContainer">
             <span class="toggle-label" id="distributionLabel">Distribution</span>
             <div class="toggle-switch" id="distributionToggle" onclick="toggleDistribution()">
               <div class="toggle-slider"></div>
@@ -841,6 +923,10 @@ body.light .no-data-message {
         lExpensive:    '💰 Most Expensive',
         lConsumption:  '📊 Daily Consumption',
         lEstCost:      '💵 Estimated Cost',
+        estRevenue:    '💵 Est. Revenue',
+        modeLabel:     'Mode',
+        modeBuy:       'BUY',
+        modeSell:      'SELL',
         lPriceRange:   '📈 Price Range',
         lLowSlots:     '✅ Low Price Slots',
         lTomorrow:     '🔮 Tomorrow vs Today',
@@ -871,6 +957,10 @@ body.light .no-data-message {
         lExpensive:    '💰 Nejdražší hodina',
         lConsumption:  '📊 Denní spotřeba',
         lEstCost:      '💵 Odhadované náklady',
+        estRevenue:    '💵 Odhad. výnos',
+        modeLabel:     'Režim',
+        modeBuy:       'NÁKUP',
+        modeSell:      'PRODEJ',
         lPriceRange:   '📈 Cenové rozpětí',
         lLowSlots:     '✅ Levné úseky',
         lTomorrow:     '🔮 Zítra vs. Dnes',
@@ -916,6 +1006,7 @@ body.light .no-data-message {
     let tooltipPinned       = false;
     let isDark              = true;  // dark mode is default
     let isEN                = true;  // English is default
+    let isSellMode          = false; // BUY mode is default
 
     // ── Tooltip ──────────────────────────────────────────────
     function buildBarTooltipHTML(entry, effectivePrice) {
@@ -1157,11 +1248,49 @@ body.light .no-data-message {
       reRenderCharts();
     }
 
+    // ── BUY / SELL mode ───────────────────────────────────────
+    function setMode(mode) {
+      isSellMode = (mode === 'sell');
+
+      const btnBuy  = document.getElementById('btnBuy');
+      const btnSell = document.getElementById('btnSell');
+      const pillBg  = document.getElementById('modePillBg');
+      const distContainer = document.getElementById('distributionToggleContainer');
+
+      btnBuy.classList.toggle('active', !isSellMode);
+      btnSell.classList.toggle('active', isSellMode);
+
+      // Slide the pill background to the active button
+      const activeBtn = isSellMode ? btnSell : btnBuy;
+      pillBg.style.left  = activeBtn.offsetLeft + 'px';
+      pillBg.style.width = activeBtn.offsetWidth + 'px';
+      pillBg.className   = `mode-pill-bg ${mode}`;
+
+      // Distribution toggle is irrelevant in SELL mode
+      distContainer.classList.toggle('disabled', isSellMode);
+
+      reRenderCharts();
+      calculateCost();
+    }
+
+    // Position pill on load (after layout)
+    window.addEventListener('load', () => {
+      const buyBtn = document.getElementById('btnBuy');
+      const pillBg = document.getElementById('modePillBg');
+      if (buyBtn && pillBg) {
+        pillBg.style.left  = buyBtn.offsetLeft + 'px';
+        pillBg.style.width = buyBtn.offsetWidth + 'px';
+      }
+    });
+
     // ── Language ──────────────────────────────────────────────
     function applyLanguage() {
       const t = getLang();
       document.querySelector('h1').textContent                    = t.title;
       document.getElementById('headerSubtitle').innerHTML         = t.subtitle;
+      document.getElementById('modeSwitchLabel').textContent      = t.modeLabel;
+      document.getElementById('btnBuy').textContent               = t.modeBuy;
+      document.getElementById('btnSell').textContent              = t.modeSell;
       document.getElementById('darkLightLabel').textContent       = t.darkLight;
       document.getElementById('czEnLabel').textContent            = t.czEn;
       document.getElementById('currencyLabel').textContent        = t.currency;
@@ -1169,7 +1298,7 @@ body.light .no-data-message {
       document.getElementById('lbl-cheapest').textContent         = t.lCheapest;
       document.getElementById('lbl-expensive').textContent        = t.lExpensive;
       document.getElementById('lbl-consumption').textContent      = t.lConsumption;
-      document.getElementById('lbl-estCost').textContent          = t.lEstCost;
+      document.getElementById('lbl-estCost').textContent          = isSellMode ? t.estRevenue : t.lEstCost;
       document.getElementById('lbl-priceRange').textContent       = t.lPriceRange;
       document.getElementById('lbl-lowSlots').textContent         = t.lLowSlots;
       document.getElementById('lbl-tomorrowComp').textContent     = t.lTomorrow;
@@ -1208,8 +1337,13 @@ body.light .no-data-message {
       return includeVAT ? DIST_HIGH_VAT : DIST_HIGH_NOVAT;
     }
 
-    // Effective price for chart bars (VAT + distribution + spot fee if set)
+    // Effective price for chart bars — formula depends on BUY/SELL mode
+    // BUY:  (spot + distCost_noVAT + spotFee) × VAT   [you pay all charges]
+    // SELL: (spot − spotFee) × VAT                    [no distribution; fee reduces revenue]
     function getEntryEffectivePriceCZK(entry) {
+      if (isSellMode) {
+        return applyVAT(entry.priceCZK - spotFeeCZK);
+      }
       return applyVAT(entry.priceCZK + spotFeeCZK) + getDistCost(isLowTariff(entry.hour, entry.minute));
     }
 
@@ -1232,10 +1366,15 @@ body.light .no-data-message {
       const consumptionPerSlot = dailyConsumption / 96;
       let totalCost = 0;
       todayData.forEach(entry => {
-        totalCost += consumptionPerSlot * ((entry.priceCZK + spotFeeCZK) / 1000);
+        const slotPrice = isSellMode
+          ? entry.priceCZK - spotFeeCZK
+          : entry.priceCZK + spotFeeCZK;
+        totalCost += consumptionPerSlot * (slotPrice / 1000);
       });
       if (isEUR) totalCost = totalCost / EUR_TO_CZK;
       document.getElementById('estimatedCost').textContent = totalCost.toFixed(2);
+      const costLabel = isSellMode ? t.estRevenue : t.lEstCost;
+      document.getElementById('lbl-estCost').textContent = costLabel;
       document.getElementById('estimatedCostCurrency').textContent = getCurrencyLabel() + t.perDay;
     }
 
@@ -1333,7 +1472,11 @@ body.light .no-data-message {
       // An extra buffer is added above the tallest bar so there's always visual
       // breathing room; the buffer grows if the spot fee exceeds 300 CZK.
       const AXIS_BUFFER_CZK = Math.max(300, spotFeeCZK); // CZK, pre-VAT
+      // Axis scale uses fully VAT-inclusive worst-case prices for the current mode
       const axisPrices = dataArray.map(d => {
+        if (isSellMode) {
+          return (d.priceCZK - spotFeeCZK) * 1.21;
+        }
         const low = isLowTariff(d.hour, d.minute);
         const dist = includeDistribution ? (low ? DIST_LOW_VAT : DIST_HIGH_VAT) : 0;
         return (d.priceCZK + spotFeeCZK) * 1.21 + dist;
