@@ -1349,11 +1349,11 @@ body.light .no-data-message {
     }
 
     // Effective price for chart bars — formula depends on BUY/SELL mode
-    // BUY:  (spot + distCost_noVAT + spotFee) × VAT   [you pay all charges]
-    // SELL: (spot − spotFee) × VAT                    [no distribution; fee reduces revenue]
+    // BUY:  (spot + spotFee) × 1.21 + distributionFee(incl.VAT)
+    // SELL: spot − spotFee   [no VAT, no distribution]
     function getEntryEffectivePriceCZK(entry) {
       if (isSellMode) {
-        return applyVAT(entry.priceCZK - spotFeeCZK);
+        return entry.priceCZK - spotFeeCZK;
       }
       return applyVAT(entry.priceCZK + spotFeeCZK) + getDistCost(isLowTariff(entry.hour, entry.minute));
     }
@@ -1364,9 +1364,9 @@ body.light .no-data-message {
       if (currentPriceRaw === null) return;
       const now = new Date();
       const low = isLowTariff(now.getHours(), now.getMinutes());
-      const dist = isSellMode ? 0 : (low ? DIST_LOW_VAT : DIST_HIGH_VAT);
-      const fee  = isSellMode ? -spotFeeCZK : spotFeeCZK;
-      const effective = (currentPriceRaw + fee) * 1.21 + dist;
+      const effective = isSellMode
+        ? currentPriceRaw - spotFeeCZK
+        : (currentPriceRaw + spotFeeCZK) * 1.21 + (low ? DIST_LOW_VAT : DIST_HIGH_VAT);
       document.getElementById('currentPrice').textContent = formatPrice(effective);
       document.getElementById('currentPriceCurrency').textContent = getCurrencyLabel() + t.perMWh;
     }
@@ -1487,11 +1487,11 @@ body.light .no-data-message {
       const AXIS_BUFFER_CZK = Math.max(300, spotFeeCZK); // CZK, pre-VAT
       // Axis scale uses fully VAT-inclusive worst-case prices for the current mode
       const axisPrices = dataArray.map(d => {
-        if (isSellMode) return (d.priceCZK - spotFeeCZK) * 1.21;
+        if (isSellMode) return d.priceCZK - spotFeeCZK;
         const low = isLowTariff(d.hour, d.minute);
         return (d.priceCZK + spotFeeCZK) * 1.21 + (low ? DIST_LOW_VAT : DIST_HIGH_VAT);
       });
-      const axisMax = Math.max(...axisPrices) + AXIS_BUFFER_CZK * 1.21;
+      const axisMax = Math.max(...axisPrices) + AXIS_BUFFER_CZK;
       const axisDataMin = Math.min(...axisPrices);
       // If all prices are positive, always anchor the bottom at 0.
       // If any price is negative, use the actual minimum (bars can go below zero).
