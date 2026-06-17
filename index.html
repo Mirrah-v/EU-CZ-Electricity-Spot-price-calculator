@@ -1019,7 +1019,12 @@ body.light .no-data-message {
     let spotFeeCZK = 250; // always stored in CZK/MWh; input display converts per currency
     let showLowTariffBands  = false;
     let tooltipPinned       = false;
-    let isDark              = true;  // dark mode is default
+    let isDark              = !window.matchMedia('(prefers-color-scheme: light)').matches;
+    // Sync body class and toggle switch to system preference on first paint
+    if (!isDark) document.body.classList.add('light');
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('darkModeToggle').classList.toggle('active', isDark);
+    });
     let isEN                = true;  // English is default
     let isSellMode          = false; // BUY mode is default
 
